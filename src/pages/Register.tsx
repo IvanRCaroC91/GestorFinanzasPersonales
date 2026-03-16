@@ -14,7 +14,7 @@ const Register = () => {
 
   const handleRegister = async () => {
     try {
-      const response = await axios.post('http://localhost:3001/register', {
+      const response = await axios.post('http://localhost:3001/register', { //POST que se envia a la conexion server.js--------------------
         nombre_usuario: nombreUsuario,
         email,
         password,
@@ -25,7 +25,7 @@ const Register = () => {
         setOpenDialog(true);
       }
     } catch {
-      setMensaje('Error al registrar el usuario');
+      setMensaje('Error al registrar el usuario'); // Error al registrar el usuario ------------------------
     }
   };
 

@@ -33,7 +33,7 @@ app.post('/register', async (req, res) => {
   const { nombre_usuario, email, password, telefono } = req.body;
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10); // encripta la contraseña -----------------------------------------------------
     console.log('Contraseña original:', password); // Depuración
     console.log('Hashed Password generado:', hashedPassword); // Depuración
     const query = 'INSERT INTO usuario (nombre_usuario, email, password, telefono) VALUES (?, ?, ?, ?)';
@@ -81,7 +81,7 @@ app.post('/login', (req, res) => {
     console.log('Hashed Password desde la base de datos:', hashedPassword); // Depuración
 
     try {
-      const isPasswordValid = await bcrypt.compare(password, hashedPassword);
+      const isPasswordValid = await bcrypt.compare(password, hashedPassword); // compara la contraseña ingresa encriptada ------------------------------
       console.log('Resultado de la comparación de contraseñas:', isPasswordValid); // Depuración
 
       if (!isPasswordValid) {
