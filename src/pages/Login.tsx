@@ -1,73 +1,100 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { Container, Card, TextField, Button, Typography } from '@mui/material';
+import { Container, Card, TextField, Button, Typography, Box, Alert } from '@mui/material';
+import { useLoginForm } from '../hooks/useLoginForm';
 
 const Login = () => {
-  const [nombreUsuario, setNombreUsuario] = useState('');
-  const [contraseña, setContraseña] = useState('');
-  const [mensaje, setMensaje] = useState('');
+  const {
+    username,
+    password,
+    isLoading,
+    error,
+    updateField,
+    handleSubmit,
+    clearError,
+  } = useLoginForm();
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
-    try {
-      const response = await axios.post('http://localhost:3001/login', {
-        nombre_usuario: nombreUsuario,
-        password: contraseña, // Cambiado de 'contraseña' a 'password'
-      });
-      setMensaje(response.data.message);
-      if (response.status === 200) {
-        navigate('/home');
-      }
-    } catch (error) {
-      setMensaje('Credenciales inválidas');
-    }
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateField('username', e.target.value);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateField('password', e.target.value);
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    handleSubmit(e);
+  };
+
+  const handleRegisterClick = () => {
+    navigate('/register');
   };
 
   return (
     <Container maxWidth="sm" style={{ marginTop: '2rem' }}>
       <Card style={{ padding: '2rem' }}>
-        <Typography variant="h5" gutterBottom>
+        <Typography variant="h5" gutterBottom align="center">
           Iniciar Sesión
         </Typography>
-        <TextField
-          label="Nombre de Usuario"
-          fullWidth
-          margin="normal"
-          value={nombreUsuario}
-          onChange={(e) => setNombreUsuario(e.target.value)}
-        />
-        <TextField
-          label="Contraseña"
-          type="password"
-          fullWidth
-          margin="normal"
-          value={contraseña}
-          onChange={(e) => setContraseña(e.target.value)}
-        />
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          style={{ marginTop: '1rem' }}
-          onClick={handleLogin}
-        >
-          Iniciar Sesión
-        </Button>
-        <Button
-          variant="text"
-          color="secondary"
-          fullWidth
-          style={{ marginTop: '1rem' }}
-          onClick={() => navigate('/register')}
-        >
-          ¿No tienes una cuenta? Regístrate aquí
-        </Button>
-        {mensaje && (
-          <Typography color="error" style={{ marginTop: '1rem' }}>
-            {mensaje}
-          </Typography>
-        )}
+        
+        <Box component="form" onSubmit={handleFormSubmit} noValidate>
+          <TextField
+            label="Nombre de Usuario"
+            fullWidth
+            margin="normal"
+            value={username}
+            onChange={handleUsernameChange}
+            disabled={isLoading}
+            required
+            autoComplete="username"
+            autoFocus
+          />
+          
+          <TextField
+            label="Contraseña"
+            type="password"
+            fullWidth
+            margin="normal"
+            value={password}
+            onChange={handlePasswordChange}
+            disabled={isLoading}
+            required
+            autoComplete="current-password"
+          />
+          
+          {error && (
+            <Alert 
+              severity="error" 
+              style={{ marginTop: '1rem' }}
+              onClose={clearError}
+            >
+              {error}
+            </Alert>
+          )}
+          
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            style={{ marginTop: '1rem' }}
+            disabled={isLoading}
+            size="large"
+          >
+            {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+          </Button>
+          
+          <Button
+            variant="text"
+            color="secondary"
+            fullWidth
+            style={{ marginTop: '1rem' }}
+            onClick={handleRegisterClick}
+            disabled={isLoading}
+          >
+            ¿No tienes una cuenta? Regístrate aquí
+          </Button>
+        </Box>
       </Card>
     </Container>
   );
