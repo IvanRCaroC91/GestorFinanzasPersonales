@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Card, TextField, Button, Typography, Box, Alert } from '@mui/material';
+import { Container, Card, TextField, Button, Typography, Box, Alert, InputAdornment, IconButton } from '@mui/material';
+import { Visibility, VisibilityOff, Person } from '@mui/icons-material';
 import { useLoginForm } from '../hooks/useLoginForm';
 
 const Login = () => {
@@ -13,6 +15,7 @@ const Login = () => {
     clearError,
   } = useLoginForm();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     updateField('username', e.target.value);
@@ -30,70 +33,107 @@ const Login = () => {
     navigate('/register');
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
-    <Container maxWidth="sm" style={{ marginTop: '2rem' }}>
-      <Card style={{ padding: '2rem' }}>
-        <Typography variant="h5" gutterBottom align="center">
-          Iniciar Sesión
-        </Typography>
-        
-        <Box component="form" onSubmit={handleFormSubmit} noValidate>
-          <TextField
-            label="Nombre de Usuario"
-            fullWidth
-            margin="normal"
-            value={username}
-            onChange={handleUsernameChange}
-            disabled={isLoading}
-            required
-            autoComplete="username"
-            autoFocus
-          />
+    <Container maxWidth="sm" sx={{ mt: 4 }}>
+      <Card sx={{ 
+        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+        borderRadius: 2,
+        overflow: 'hidden'
+      }}>
+        <Box sx={{ p: 3 }}>
+          <Typography variant="h5" gutterBottom align="center" sx={{ mb: 3 }}>
+            Iniciar Sesión
+          </Typography>
           
-          <TextField
-            label="Contraseña"
-            type="password"
-            fullWidth
-            margin="normal"
-            value={password}
-            onChange={handlePasswordChange}
-            disabled={isLoading}
-            required
-            autoComplete="current-password"
-          />
-          
-          {error && (
-            <Alert 
-              severity="error" 
-              style={{ marginTop: '1rem' }}
-              onClose={clearError}
+          <Box component="form" onSubmit={handleFormSubmit} noValidate>
+            <TextField
+              label="Nombre de Usuario"
+              fullWidth
+              margin="normal"
+              value={username}
+              onChange={handleUsernameChange}
+              disabled={isLoading}
+              required
+              autoComplete="username"
+              autoFocus
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Person color="action" />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ mb: 2 }}
+            />
+            
+            <TextField
+              label="Contraseña"
+              type={showPassword ? 'text' : 'password'}
+              fullWidth
+              margin="normal"
+              value={password}
+              onChange={handlePasswordChange}
+              disabled={isLoading}
+              required
+              autoComplete="current-password"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={togglePasswordVisibility}
+                      edge="end"
+                      size="small"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ mb: 2 }}
+            />
+            
+            {error && (
+              <Alert 
+                severity="error" 
+                sx={{ mb: 2 }}
+                onClose={clearError}
+              >
+                {error}
+              </Alert>
+            )}
+            
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              size="large"
+              disabled={isLoading}
+              sx={{ 
+                py: 1.5,
+                fontSize: '1.1rem'
+              }}
             >
-              {error}
-            </Alert>
-          )}
-          
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            style={{ marginTop: '1rem' }}
-            disabled={isLoading}
-            size="large"
-          >
-            {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-          </Button>
-          
-          <Button
-            variant="text"
-            color="secondary"
-            fullWidth
-            style={{ marginTop: '1rem' }}
-            onClick={handleRegisterClick}
-            disabled={isLoading}
-          >
-            ¿No tienes una cuenta? Regístrate aquí
-          </Button>
+              {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+            </Button>
+            
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+              <Button
+                variant="text"
+                color="secondary"
+                onClick={handleRegisterClick}
+                disabled={isLoading}
+                sx={{ textTransform: 'none' }}
+              >
+                ¿No tienes una cuenta? Regístrate aquí
+              </Button>
+            </Box>
+          </Box>
         </Box>
       </Card>
     </Container>
