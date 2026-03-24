@@ -1,5 +1,4 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
-import { message } from 'antd';
 
 export interface ApiResponse<T = any> {
   success: boolean;
