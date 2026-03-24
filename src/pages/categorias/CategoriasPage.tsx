@@ -20,6 +20,12 @@ import {
   Snackbar,
   Alert,
   Chip,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Grid,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -37,6 +43,11 @@ const CategoriasPage: React.FC = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [editingCategoria, setEditingCategoria] = useState<Categoria | null>(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+  const [filters, setFilters] = useState({
+    search: '',
+    tipo: '',
+    tipoGasto: '',
+  });
 
   useEffect(() => {
     loadCategorias();
@@ -121,6 +132,28 @@ const CategoriasPage: React.FC = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const handleFilterChange = (field: string) => (event: any) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: event.target.value,
+    }));
+  };
+
+  const filteredCategorias = categorias.filter(categoria => {
+    const matchesSearch = categoria.nombre.toLowerCase().includes(filters.search.toLowerCase());
+    const matchesTipo = !filters.tipo || categoria.tipo === filters.tipo;
+    const matchesTipoGasto = !filters.tipoGasto || categoria.tipoGasto === filters.tipoGasto;
+    
+    return matchesSearch && matchesTipo && matchesTipoGasto;
+  });
+
+  const getUniqueTiposGasto = () => {
+    const tiposGasto = categorias
+      .map(cat => cat.tipoGasto)
+      .filter((tipo): tipo is string => tipo !== undefined && tipo !== '');
+    return [...new Set(tiposGasto)];
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
@@ -144,6 +177,52 @@ const CategoriasPage: React.FC = () => {
             </Button>
           </Box>
 
+          <Grid container spacing={2} mb={3}>
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                fullWidth
+                label="Buscar por nombre"
+                value={filters.search}
+                onChange={handleFilterChange('search')}
+                placeholder="Ej: Comida, Transporte..."
+              />
+            </Grid>
+            
+            <Grid item xs={12} sm={6} md={4}>
+              <FormControl fullWidth>
+                <InputLabel>Tipo</InputLabel>
+                <Select
+                  value={filters.tipo}
+                  onChange={handleFilterChange('tipo')}
+                  label="Tipo"
+                >
+                  <MenuItem value="">Todos</MenuItem>
+                  <MenuItem value="INGRESO">Ingresos</MenuItem>
+                  <MenuItem value="GASTO">Gastos</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={4}>
+              <FormControl fullWidth>
+                <InputLabel>Tipo de Gasto</InputLabel>
+                <Select
+                  value={filters.tipoGasto}
+                  onChange={handleFilterChange('tipoGasto')}
+                  label="Tipo de Gasto"
+                  disabled={filters.tipo === 'INGRESO'}
+                >
+                  <MenuItem value="">Todos</MenuItem>
+                  {getUniqueTiposGasto().map((tipo) => (
+                    <MenuItem key={tipo} value={tipo}>
+                      {tipo}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
@@ -161,7 +240,7 @@ const CategoriasPage: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {categorias.map((categoria) => (
+                {filteredCategorias.map((categoria) => (
                   <TableRow key={categoria.id}>
                     <TableCell>{categoria.nombre}</TableCell>
                     <TableCell>
@@ -190,11 +269,14 @@ const CategoriasPage: React.FC = () => {
                     </TableCell>
                   </TableRow>
                 ))}
-                {categorias.length === 0 && (
+                {filteredCategorias.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={4} align="center">
                       <Typography variant="body2" color="textSecondary">
-                        No hay categorías registradas
+                        {categorias.length === 0 
+                          ? 'No hay categorías registradas' 
+                          : 'No hay categorías que coincidan con los filtros'
+                        }
                       </Typography>
                     </TableCell>
                   </TableRow>
