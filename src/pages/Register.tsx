@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../api/axiosConfig';
+import authService from '../services/authService';
 import { Container, Card, TextField, Button, Typography, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 
 const Register = () => {
@@ -14,14 +14,14 @@ const Register = () => {
 
   const handleRegister = async () => {
     try {
-      const response = await axiosInstance.post('/api/v1/auth/register', { //POST que se envia a la conexion server.js--------------------
+      const response = await authService.register({ //POST que se envia a la conexion server.js--------------------
         nombre_usuario: nombreUsuario,
         email,
         password,
         telefono,
       });
-      setMensaje(response.data.message);
-      if (response.status === 201) {
+      setMensaje(response.message);
+      if (response.success) {
         setOpenDialog(true);
       }
     } catch {
