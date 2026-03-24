@@ -2,31 +2,45 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Card, TextField, Button, Typography, Box, Alert, InputAdornment, IconButton } from '@mui/material';
 import { Visibility, VisibilityOff, Person } from '@mui/icons-material';
-import { useLoginForm } from '../hooks/useLoginForm';
+import authService from '../services/authService';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
-  const {
-    username,
-    password,
-    isLoading,
-    error,
-    updateField,
-    handleSubmit,
-    clearError,
-  } = useLoginForm();
+  const { login, isAuthenticated } = useAuth();
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateField('username', e.target.value);
+    setFormData(prev => ({ ...prev, username: e.target.value }));
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateField('password', e.target.value);
+    setFormData(prev => ({ ...prev, password: e.target.value }));
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    handleSubmit(e);
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await login(formData);
+      if (result.success) {
+        navigate('/home');
+      } else {
+        setError(result.message || 'Error en el inicio de sesión');
+      }
+    } catch (error: any) {
+      setError('Error de conexión. Intente nuevamente.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRegisterClick = () => {
@@ -54,7 +68,7 @@ const Login = () => {
               label="Nombre de Usuario"
               fullWidth
               margin="normal"
-              value={username}
+              value={formData.username}
               onChange={handleUsernameChange}
               disabled={isLoading}
               required
@@ -75,7 +89,7 @@ const Login = () => {
               type={showPassword ? 'text' : 'password'}
               fullWidth
               margin="normal"
-              value={password}
+              value={formData.password}
               onChange={handlePasswordChange}
               disabled={isLoading}
               required
@@ -101,7 +115,7 @@ const Login = () => {
               <Alert 
                 severity="error" 
                 sx={{ mb: 2 }}
-                onClose={clearError}
+                onClose={() => setError(null)}
               >
                 {error}
               </Alert>

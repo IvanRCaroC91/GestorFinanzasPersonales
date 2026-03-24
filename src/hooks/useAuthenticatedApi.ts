@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import authService from '../services/authService';
+import axiosInstance from '../api/axiosConfig';
+import { ApiResponse } from '../types/finance';
 
 export interface ApiState<T> {
   data: T | null;
@@ -27,22 +28,21 @@ export const useAuthenticatedApi = <T = any>(): UseAuthenticatedApiReturn<T> => 
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const response = await authService.authenticatedFetch(url, options);
+      const response = await axiosInstance({
+        url,
+        ...options,
+      });
       
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = response.data;
       setState({ data, isLoading: false, error: null });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Error desconocido';
       setState(prev => ({
         ...prev,
         isLoading: false,
         error: errorMessage,
       }));
+      throw error;
     }
   }, []);
 
@@ -90,6 +90,9 @@ export const useAuthenticatedPost = <T = any>() => {
   const post = useCallback((requestUrl: string, data?: any) => {
     return execute(requestUrl, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: data ? JSON.stringify(data) : undefined,
     });
   }, [execute]);
@@ -109,6 +112,9 @@ export const useAuthenticatedPut = <T = any>() => {
   const put = useCallback((requestUrl: string, data?: any) => {
     return execute(requestUrl, {
       method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: data ? JSON.stringify(data) : undefined,
     });
   }, [execute]);

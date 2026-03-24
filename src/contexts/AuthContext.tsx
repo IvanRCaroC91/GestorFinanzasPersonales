@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import authService from '../services/authService';
-import type { User, AuthContextType, LoginRequest } from '../types';
 
 // Props para el provider
 interface AuthProviderProps {
@@ -10,7 +9,7 @@ interface AuthProviderProps {
 
 // Provider del contexto de autenticación
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Verificar si hay un token al cargar la aplicación
@@ -19,9 +18,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         const isAuthenticated = authService.isAuthenticated();
         if (isAuthenticated) {
-          // Aquí podrías decodificar el token para obtener información del usuario
-          // Por ahora, simplemente marcamos como autenticado
-          setUser({ username: 'user' }); // Esto se puede mejorar decodificando el JWT
+          const userData = authService.getUser();
+          setUser(userData);
         }
       } catch (error) {
         console.error('Error verificando estado de autenticación:', error);
@@ -38,12 +36,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
    * @param credentials - Credenciales del usuario
    * @returns Resultado del login
    */
-  const login = async (credentials: LoginRequest): Promise<{ success: boolean; message?: string }> => {
+  const login = async (credentials: { username: string; password: string }): Promise<{ success: boolean; message?: string }> => {
     try {
       const response = await authService.login(credentials);
       
       if (response.success) {
-        setUser({ username: credentials.username });
+        setUser(response.user);
         return { success: true };
       } else {
         return { success: false, message: response.message || 'Error en el inicio de sesión' };

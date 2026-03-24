@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../api/axiosConfig';
 import { Container, Card, TextField, Button, Typography, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 
 const Register = () => {
@@ -14,7 +14,7 @@ const Register = () => {
 
   const handleRegister = async () => {
     try {
-      const response = await axios.post('http://localhost:3001/register', { //POST que se envia a la conexion server.js--------------------
+      const response = await axiosInstance.post('/api/v1/auth/register', { //POST que se envia a la conexion server.js--------------------
         nombre_usuario: nombreUsuario,
         email,
         password,

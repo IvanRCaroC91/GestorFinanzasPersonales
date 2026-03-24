@@ -1,107 +1,77 @@
-// Servicio de autenticación para manejar la comunicación con el backend Spring Boot
-import API_ENDPOINTS from '../constants/api';
-import type { LoginRequest, LoginResponse, AuthError, AuthHeaders } from '../types';
+import axiosInstance from '../api/axiosConfig';
+import { ApiResponse } from '../types/finance';
+
+interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+interface LoginResponse {
+  success: boolean;
+  message: string;
+  token?: string;
+  user?: {
+    id: string;
+    username: string;
+    email: string;
+  };
+}
 
 class AuthService {
-  /**
-   * Inicia sesión con las credenciales proporcionadas
-   * @param credentials - Credenciales de login (username y password)
-   * @returns Promise con la respuesta del login
-   */
+  private readonly userId = '1454bf34-4592-48e1-9653-5479c839dc0f';
+
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
-      const response = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
+      const response = await axiosInstance.post('/api/v1/auth/login', credentials);
+      const data = response.data;
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw {
-          message: data.message || 'Error en el inicio de sesión',
-          status: response.status,
-        } as AuthError;
-      }
-
-      // Si el login es exitoso, guardar el token en localStorage
       if (data.success && data.token) {
-        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userId', this.userId);
+        if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
       }
 
       return data;
-    } catch (error) {
-      if (error instanceof Error) {
-        throw {
-          message: error.message,
-        } as AuthError;
-      }
+    } catch (error: any) {
+      console.error('[AuthService] Login error:', error);
       throw error;
     }
   }
 
-  /**
-   * Obtiene el token JWT almacenado en localStorage
-   * @returns Token JWT o null si no existe
-   */
-  getToken(): string | null {
-    return localStorage.getItem('authToken');
+  async register(userData: any): Promise<ApiResponse> {
+    try {
+      const response = await axiosInstance.post('/api/v1/auth/register', userData);
+      return response.data;
+    } catch (error: any) {
+      console.error('[AuthService] Register error:', error);
+      throw error;
+    }
   }
 
-  /**
-   * Verifica si hay un usuario autenticado
-   * @returns true si existe un token, false en caso contrario
-   */
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
+
+  getUserId(): string | null {
+    return localStorage.getItem('userId') || this.userId;
+  }
+
   isAuthenticated(): boolean {
     const token = this.getToken();
     return token !== null && token !== '';
   }
 
-  /**
-   * Cierra sesión eliminando el token del localStorage
-   */
   logout(): void {
-    localStorage.removeItem('authToken');
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('user');
   }
 
-  /**
-   * Obtiene los headers para peticiones autenticadas
-   * @returns Headers con el token de autorización Bearer
-   */
-  getAuthHeaders(): AuthHeaders {
-    const token = this.getToken();
-    const headers: AuthHeaders = {
-      'Content-Type': 'application/json',
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    return headers;
-  }
-
-  /**
-   * Realiza una petición autenticada al backend
-   * @param url - URL del endpoint
-   * @param options - Opciones de la petición fetch
-   * @returns Promise con la respuesta
-   */
-  async authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
-    const authHeaders = this.getAuthHeaders();
-    
-    const fetchOptions: RequestInit = {
-      ...options,
-      headers: {
-        ...authHeaders,
-        ...options.headers,
-      },
-    };
-
-    return fetch(url, fetchOptions);
+  getUser(): any | null {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
   }
 }
 

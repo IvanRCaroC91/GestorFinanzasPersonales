@@ -4,6 +4,9 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
+import CategoriasPage from './pages/categorias/CategoriasPage';
+import MovimientosPage from './pages/movimientos/MovimientosPage';
+import PresupuestosPage from './pages/presupuestos/PresupuestosPage';
 import './App.css';
 
 function App() {
@@ -20,6 +23,30 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Home />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/categorias" 
+              element={
+                <ProtectedRoute>
+                  <CategoriasPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/movimientos" 
+              element={
+                <ProtectedRoute>
+                  <MovimientosPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/presupuestos" 
+              element={
+                <ProtectedRoute>
+                  <PresupuestosPage />
                 </ProtectedRoute>
               } 
             />
