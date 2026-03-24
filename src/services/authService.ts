@@ -24,12 +24,25 @@ class AuthService {
       const response = await axiosInstance.post('/api/v1/auth/login', credentials);
       const data = response.data;
 
+      console.log('[AuthService] Response data:', data);
+
       if (data.success && data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('userId', this.userId);
-        if (data.user) {
-          localStorage.setItem('user', JSON.stringify(data.user));
-        }
+        
+        // Si no hay user en la respuesta, crear uno básico
+        const userData = data.user || { 
+          id: this.userId, 
+          username: credentials.username,
+          email: ''
+        };
+        
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        // Asegurar que el response siempre tenga user
+        data.user = userData;
+        
+        console.log('[AuthService] User data stored:', userData);
       }
 
       return data;
