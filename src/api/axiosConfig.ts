@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
+import axios from 'axios';
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -6,7 +6,7 @@ export interface ApiResponse<T = any> {
   data: T;
 }
 
-const axiosInstance: AxiosInstance = axios.create({
+const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
   timeout: 10000,
   headers: {
@@ -37,11 +37,11 @@ axiosInstance.interceptors.request.use(
 
 // Response interceptor
 axiosInstance.interceptors.response.use(
-  (response: AxiosResponse) => {
+  (response) => {
     console.log(`[API] ${response.config.method?.toUpperCase()} ${response.config.url} OK`);
     return response;
   },
-  (error: AxiosError) => {
+  (error) => {
     const { response, request, config } = error;
     
     if (response) {
