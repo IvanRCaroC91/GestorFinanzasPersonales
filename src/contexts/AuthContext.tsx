@@ -27,10 +27,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const isAuthenticated = authService.isAuthenticated();
         if (isAuthenticated) {
           const userData = authService.getUser();
-          setUser(userData);
+          if (userData) {
+            setUser(userData);
+          } else {
+            // Token existe pero no hay userData, limpiar todo
+            console.log('[AuthContext] Token exists but no userData, clearing session');
+            authService.logout();
+          }
+        } else {
+          // Token no válido o expirado, asegurar estado limpio
+          console.log('[AuthContext] Invalid or expired token, user not authenticated');
+          setUser(null);
         }
       } catch (error) {
         console.error('Error verificando estado de autenticación:', error);
+        setUser(null);
       } finally {
         setIsLoading(false);
       }

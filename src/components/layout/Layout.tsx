@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, AppBar, Toolbar, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
-import { BrowserRouter as Router } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import { useAuth } from '../../contexts/AuthContext';
@@ -43,25 +42,23 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
-        <Box sx={{ display: 'flex' }}>
-          <Sidebar />
-          <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-            <Topbar user={user} />
-            <Box
-              component="main"
-              sx={{
-                flexGrow: 1,
-                p: 3,
-                backgroundColor: 'background.default',
-                minHeight: '100vh',
-              }}
-            >
-              {children}
-            </Box>
+      <Box sx={{ display: 'flex' }}>
+        <Sidebar />
+        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+          <Topbar user={user} />
+          <Box
+            component="main"
+            sx={{
+              flexGrow: 1,
+              p: 3,
+              backgroundColor: 'background.default',
+              minHeight: '100vh',
+            }}
+          >
+            {children}
           </Box>
         </Box>
-      </Router>
+      </Box>
     </ThemeProvider>
   );
 };

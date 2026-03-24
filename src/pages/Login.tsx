@@ -24,6 +24,14 @@ const Login = () => {
     }
   }, [isAuthenticated, navigate]);
 
+  // Navegación después de login exitoso
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log('[Login] User authenticated after login, navigating to /home');
+      navigate('/home');
+    }
+  }, [isAuthenticated, navigate]);
+
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, username: e.target.value }));
   };
@@ -43,8 +51,9 @@ const Login = () => {
       console.log('[Login] Login result:', result);
       
       if (result.success) {
-        console.log('[Login] Login successful, navigating to /home');
-        navigate('/home');
+        console.log('[Login] Login successful - AuthContext will handle navigation');
+        // NO navegar aquí - dejar que useEffect maneje la redirección
+        // El AuthContext actualizará el estado y el useEffect se encargará de navegar
       } else {
         console.log('[Login] Login failed:', result.message);
         setError(result.message || 'Error en el inicio de sesión');

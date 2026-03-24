@@ -62,6 +62,7 @@ axiosInstance.interceptors.response.use(
         case 401:
           console.log('[API] Unauthorized - clearing session');
           localStorage.removeItem('token');
+          localStorage.removeItem('userId');
           localStorage.removeItem('user');
           window.location.href = '/login';
           break;
@@ -69,6 +70,7 @@ axiosInstance.interceptors.response.use(
         case 403:
           console.log('[API] Forbidden - clearing session');
           localStorage.removeItem('token');
+          localStorage.removeItem('userId');
           localStorage.removeItem('user');
           window.location.href = '/login';
           break;
