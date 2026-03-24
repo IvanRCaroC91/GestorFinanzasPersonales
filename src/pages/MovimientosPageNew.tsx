@@ -73,14 +73,15 @@ const MovimientosPage: React.FC = () => {
         setCategorias(categoriasResponse.data);
       }
     } catch (error) {
-      setError('Error al cargar los datos');
+      const errorMessage = error instanceof Error ? error.message : 'Error al cargar los datos';
+      setError(errorMessage);
       console.error('Error loading data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleFilterChange = (field: string) => (event: any) => {
+  const handleFilterChange = (field: keyof typeof filters) => (event: React.ChangeEvent<HTMLInputElement | { value: string }>) => {
     setFilters(prev => ({
       ...prev,
       [field]: event.target.value,
@@ -116,7 +117,8 @@ const MovimientosPage: React.FC = () => {
           setSnackbar({ open: true, message: response.message, severity: 'error' });
         }
       } catch (error) {
-        setSnackbar({ open: true, message: 'Error al eliminar movimiento', severity: 'error' });
+        const errorMessage = error instanceof Error ? error.message : 'Error al eliminar movimiento';
+        setSnackbar({ open: true, message: errorMessage, severity: 'error' });
       }
     }
   };
@@ -143,7 +145,8 @@ const MovimientosPage: React.FC = () => {
         setSnackbar({ open: true, message: response.message, severity: 'error' });
       }
     } catch (error) {
-      setSnackbar({ open: true, message: 'Error al guardar movimiento', severity: 'error' });
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar movimiento';
+      setSnackbar({ open: true, message: errorMessage, severity: 'error' });
     }
   };
 
@@ -344,7 +347,7 @@ const MovimientosPage: React.FC = () => {
       {/* Dialog Form */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
         <DialogTitle>
-          {editingMovimiento ? 'Editar Movimiento'' : 'Nuevo Movimiento'}
+          {editingMovimiento ? 'Editar Movimiento' : 'Nuevo Movimiento'}
         </DialogTitle>
         <DialogContent>
           <MovimientoForm

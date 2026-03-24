@@ -39,7 +39,7 @@ const MovimientoForm: React.FC<MovimientoFormProps> = ({ movimiento, categorias,
     }
   }, [movimiento]);
 
-  const handleChange = (field: string) => (event: any) => {
+  const handleChange = (field: keyof typeof formData) => (event: React.ChangeEvent<HTMLInputElement | { value: string }>) => {
     setFormData(prev => ({
       ...prev,
       [field]: event.target.value,
@@ -48,6 +48,23 @@ const MovimientoForm: React.FC<MovimientoFormProps> = ({ movimiento, categorias,
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validación básica
+    if (!formData.monto || parseFloat(formData.monto) <= 0) {
+      alert('El monto debe ser mayor a 0');
+      return;
+    }
+    
+    if (!formData.descripcion.trim()) {
+      alert('La descripción es requerida');
+      return;
+    }
+    
+    if (!formData.categoriaId) {
+      alert('Debe seleccionar una categoría');
+      return;
+    }
+    
     onSave({
       ...formData,
       monto: parseFloat(formData.monto),

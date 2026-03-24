@@ -2,7 +2,7 @@ import axiosInstance from '../api/axiosConfig';
 import { ApiResponse, Categoria, Movimiento, Presupuesto, EjecucionPresupuesto } from '../types/finance';
 
 class FinanceService {
-  private baseUrl = '/api/v1/finance';
+  private baseUrl = '/finance';
 
   // CATEGORIAS
   async getCategorias(): Promise<ApiResponse<Categoria[]>> {

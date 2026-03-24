@@ -8,6 +8,7 @@ import DashboardPage from './pages/DashboardPage';
 import MovimientosPage from './pages/MovimientosPageNew';
 import PresupuestosPage from './pages/PresupuestosPage';
 import CategoriasPage from './pages/categorias/CategoriasPage';
+import ConnectionDiagnostic from './components/ConnectionDiagnostic';
 import './App.css';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/diagnostic" element={<ConnectionDiagnostic />} />
         <Route 
           path="/home" 
           element={

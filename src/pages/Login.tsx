@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Card, TextField, Button, Typography, Box, Alert, InputAdornment, IconButton } from '@mui/material';
 import { Visibility, VisibilityOff, Person } from '@mui/icons-material';
@@ -15,6 +15,14 @@ const Login = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+
+  // Redirección automática si ya está autenticado
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log('[Login] User already authenticated, redirecting to /home');
+      navigate('/home');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, username: e.target.value }));

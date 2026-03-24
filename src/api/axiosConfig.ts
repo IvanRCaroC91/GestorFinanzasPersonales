@@ -7,7 +7,7 @@ export interface ApiResponse<T = any> {
 }
 
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+  baseURL: import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/api/v1` : '/api/v1',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -18,15 +18,23 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    const userId = '1454bf34-4592-48e1-9653-5479c839dc0f';
+    const userId = localStorage.getItem('userId'); // userId dinámico del backend
     
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Determinar si el endpoint requiere autenticación
+    const isAuthEndpoint = config.url?.includes('/auth/login') || config.url?.includes('/auth/register');
+    const isProtectedEndpoint = config.url?.includes('/finance/') || config.url?.includes('/protected/');
+    
+    // Solo agregar headers en endpoints protegidos (no en login/register)
+    if (!isAuthEndpoint && isProtectedEndpoint) {
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      if (userId) {
+        config.headers['X-User-Id'] = userId;
+      }
     }
     
-    config.headers['X-User-Id'] = userId;
-    
-    console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`);
+    console.log(`[API] ${config.method?.toUpperCase()} ${config.url} | Auth: ${!isAuthEndpoint && isProtectedEndpoint ? 'YES' : 'NO'} | UserId: ${userId || 'NONE'}`);
     return config;
   },
   (error) => {
