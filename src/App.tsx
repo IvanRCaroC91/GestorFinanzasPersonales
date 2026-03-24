@@ -1,58 +1,63 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import Layout from './components/layout/Layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Home from './pages/Home';
+import DashboardPage from './pages/DashboardPage';
+import MovimientosPage from './pages/MovimientosPageNew';
+import PresupuestosPage from './pages/PresupuestosPage';
 import CategoriasPage from './pages/categorias/CategoriasPage';
-import MovimientosPage from './pages/movimientos/MovimientosPage';
-import PresupuestosPage from './pages/presupuestos/PresupuestosPage';
 import './App.css';
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <div className="app-container">
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route 
-              path="/home" 
-              element={
-                <ProtectedRoute>
-                  <Home />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/categorias" 
-              element={
-                <ProtectedRoute>
-                  <CategoriasPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/movimientos" 
-              element={
-                <ProtectedRoute>
-                  <MovimientosPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/presupuestos" 
-              element={
-                <ProtectedRoute>
-                  <PresupuestosPage />
-                </ProtectedRoute>
-              } 
-            />
-          </Routes>
-        </div>
-      </Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route 
+          path="/home" 
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <DashboardPage />
+              </Layout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/categorias" 
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <CategoriasPage />
+              </Layout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/movimientos" 
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <MovimientosPage />
+              </Layout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/presupuestos" 
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <PresupuestosPage />
+              </Layout>
+            </ProtectedRoute>
+          } 
+        />
+      </Routes>
     </AuthProvider>
   );
 }
