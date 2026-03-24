@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import axiosInstance from '../api/axiosConfig';
-import { ApiResponse } from '../types/finance';
 
 export interface ApiState<T> {
   data: T | null;

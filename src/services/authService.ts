@@ -1,5 +1,4 @@
 import axiosInstance from '../api/axiosConfig';
-import { ApiResponse } from '../types/finance';
 
 interface LoginRequest {
   username: string;
@@ -40,7 +39,7 @@ class AuthService {
     }
   }
 
-  async register(userData: any): Promise<ApiResponse> {
+  async register(userData: any): Promise<{ success: boolean; message: string }> {
     try {
       const response = await axiosInstance.post('/api/v1/auth/register', userData);
       return response.data;
