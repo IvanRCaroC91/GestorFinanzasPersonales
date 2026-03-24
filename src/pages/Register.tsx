@@ -1,25 +1,28 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Container, Card, TextField, Button, Typography, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, Box, Alert } from '@mui/material';
+import { Container, Card, TextField, Button, Typography, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Box, Alert } from '@mui/material';
 
 const Register = () => {
   const [nombreUsuario, setNombreUsuario] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [telefono, setTelefono] = useState('');
   const [primerNombre, setPrimerNombre] = useState('');
-  const [primerApellido, setPrimerApellido] = useState('');
   const [segundoNombre, setSegundoNombre] = useState('');
+  const [primerApellido, setPrimerApellido] = useState('');
   const [segundoApellido, setSegundoApellido] = useState('');
   const [mensaje, setMensaje] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
+  const [isError, setIsError] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async () => {
     // Validación básica de campos requeridos
-    if (!primerNombre || !primerApellido || !nombreUsuario || !email || !password || !telefono) {
+    if (!primerNombre || !primerApellido || !nombreUsuario || !email || !password || !confirmPassword || !telefono) {
       setMensaje('Por favor complete todos los campos requeridos');
+      setIsError(true);
       setOpenDialog(true);
       return;
     }
@@ -28,6 +31,7 @@ const Register = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setMensaje('Por favor ingrese un email válido');
+      setIsError(true);
       setOpenDialog(true);
       return;
     }
@@ -35,6 +39,24 @@ const Register = () => {
     // Validación de contraseña (mínimo 6 caracteres)
     if (password.length < 6) {
       setMensaje('La contraseña debe tener al menos 6 caracteres');
+      setIsError(true);
+      setOpenDialog(true);
+      return;
+    }
+
+    // Validación de confirmación de contraseña
+    if (password !== confirmPassword) {
+      setMensaje('Las contraseñas no coinciden');
+      setIsError(true);
+      setOpenDialog(true);
+      return;
+    }
+
+    // Validación de teléfono (solo números y 10 caracteres)
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(telefono)) {
+      setMensaje('El teléfono debe contener exactamente 10 números');
+      setIsError(true);
       setOpenDialog(true);
       return;
     }
@@ -51,23 +73,28 @@ const Register = () => {
         segundo_apellido: segundoApellido || null,
       });
       setMensaje(response.data.message);
+      setIsError(false);
       if (response.status === 201) {
         setOpenDialog(true);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error en registro:', error);
-      if (error.response?.data?.message) {
-        setMensaje(error.response.data.message);
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      if (axiosError.response?.data?.message) {
+        setMensaje(axiosError.response.data.message);
       } else {
         setMensaje('Error al registrar el usuario');
       }
+      setIsError(true);
       setOpenDialog(true);
     }
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    navigate('/');
+    if (!isError) {
+      navigate('/');
+    }
   };
 
   return (
@@ -86,8 +113,7 @@ const Register = () => {
             Los campos marcados con * son obligatorios
           </Alert>
           
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <TextField
                 label="Primer Nombre *"
                 fullWidth
@@ -95,16 +121,12 @@ const Register = () => {
                 value={primerNombre}
                 onChange={(e) => setPrimerNombre(e.target.value)}
               />
-            </Grid>
-            <Grid item xs={12} sm={6}>
               <TextField
                 label="Segundo Nombre"
                 fullWidth
                 value={segundoNombre}
                 onChange={(e) => setSegundoNombre(e.target.value)}
               />
-            </Grid>
-            <Grid item xs={12} sm={6}>
               <TextField
                 label="Primer Apellido *"
                 fullWidth
@@ -112,16 +134,12 @@ const Register = () => {
                 value={primerApellido}
                 onChange={(e) => setPrimerApellido(e.target.value)}
               />
-            </Grid>
-            <Grid item xs={12} sm={6}>
               <TextField
                 label="Segundo Apellido"
                 fullWidth
                 value={segundoApellido}
                 onChange={(e) => setSegundoApellido(e.target.value)}
               />
-            </Grid>
-            <Grid item xs={12}>
               <TextField
                 label="Nombre de Usuario *"
                 fullWidth
@@ -129,8 +147,6 @@ const Register = () => {
                 value={nombreUsuario}
                 onChange={(e) => setNombreUsuario(e.target.value)}
               />
-            </Grid>
-            <Grid item xs={12}>
               <TextField
                 label="Email *"
                 type="email"
@@ -139,8 +155,6 @@ const Register = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-            </Grid>
-            <Grid item xs={12}>
               <TextField
                 label="Contraseña *"
                 type="password"
@@ -149,17 +163,32 @@ const Register = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-            </Grid>
-            <Grid item xs={12}>
+              <TextField
+                label="Confirmar Contraseña *"
+                type="password"
+                fullWidth
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
               <TextField
                 label="Teléfono *"
                 fullWidth
                 required
                 value={telefono}
-                onChange={(e) => setTelefono(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  if (value.length <= 10) {
+                    setTelefono(value);
+                  }
+                }}
+                placeholder="Ej: 1234567890"
+                inputProps={{
+                  maxLength: 10,
+                  pattern: "[0-9]{10}"
+                } as React.InputHTMLAttributes<HTMLInputElement>}
               />
-            </Grid>
-          </Grid>
+            </Box>
           
           <Box sx={{ mt: 3 }}>
             <Button
@@ -175,11 +204,22 @@ const Register = () => {
             >
               Registrarse
             </Button>
+            
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <Button
+                variant="text"
+                color="secondary"
+                onClick={() => navigate('/')}
+                sx={{ textTransform: 'none' }}
+              >
+                Volver a Inicio de Sesión
+              </Button>
+            </Box>
           </Box>
         </Box>
       </Card>
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>Registro Exitoso</DialogTitle>
+        <DialogTitle>{isError ? 'Error de Validación' : 'Registro Exitoso'}</DialogTitle>
         <DialogContent>
           <DialogContentText>{mensaje}</DialogContentText>
         </DialogContent>
