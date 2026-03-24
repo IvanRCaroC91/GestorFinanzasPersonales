@@ -30,13 +30,19 @@ const Login = () => {
     setError(null);
 
     try {
+      console.log('[Login] Attempting login with:', formData.username);
       const result = await login(formData);
+      console.log('[Login] Login result:', result);
+      
       if (result.success) {
+        console.log('[Login] Login successful, navigating to /home');
         navigate('/home');
       } else {
+        console.log('[Login] Login failed:', result.message);
         setError(result.message || 'Error en el inicio de sesión');
       }
     } catch (error: any) {
+      console.error('[Login] Login error:', error);
       setError('Error de conexión. Intente nuevamente.');
     } finally {
       setIsLoading(false);

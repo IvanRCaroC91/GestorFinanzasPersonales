@@ -7,6 +7,14 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+interface AuthContextType {
+  user: any | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (credentials: { username: string; password: string }) => Promise<{ success: boolean; message?: string }>;
+  logout: () => void;
+}
+
 // Provider del contexto de autenticación
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<any | null>(null);
@@ -38,15 +46,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
    */
   const login = async (credentials: { username: string; password: string }): Promise<{ success: boolean; message?: string }> => {
     try {
+      console.log('[AuthContext] Login attempt:', credentials.username);
       const response = await authService.login(credentials);
+      console.log('[AuthContext] AuthService response:', response);
       
       if (response.success) {
+        console.log('[AuthContext] Login successful, setting user:', response.user);
         setUser(response.user);
         return { success: true };
       } else {
+        console.log('[AuthContext] Login failed:', response.message);
         return { success: false, message: response.message || 'Error en el inicio de sesión' };
       }
     } catch (error: any) {
+      console.error('[AuthContext] Login error:', error);
       const errorMessage = error.message || 'Credenciales inválidas';
       return { success: false, message: errorMessage };
     }
