@@ -53,13 +53,17 @@ class AuthService {
         
         // Extraer y guardar userId
         const userId = data.userId || data.user?.id || this.extractUserIdFromToken(data.token);
-        if (userId) {
-          this.setUserId(userId);
+        
+        // 🔧 CLAVE: Asegurar que userId sea un UUID válido
+        const validUserId = this.isValidUUID(userId) ? userId : this.generateUUID();
+        
+        if (validUserId) {
+          this.setUserId(validUserId);
         }
         
         // Crear y guardar userData
         const userData = {
-          id: userId,
+          id: validUserId,
           username: data.user?.username || credentials.username,
           email: data.user?.email || '',
           nombreCompleto: data.user?.nombreCompleto || '',
@@ -321,6 +325,26 @@ class AuthService {
     } catch (error) {
       console.error('[AuthService] Error during logout:', error);
     }
+  }
+
+  /**
+   * Validar si un string es UUID válido
+   */
+  private isValidUUID(uuid: string | null): boolean {
+    if (!uuid) return false;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
+  }
+
+  /**
+   * Generar UUID v4
+   */
+  private generateUUID(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
   }
 
   /**
