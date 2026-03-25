@@ -18,10 +18,9 @@ export interface MovimientoRequest {
 
 export interface PresupuestoRequest {
     categoriaId: string;
-    montoMaximo: number;
-    periodo: 'MENSUAL' | 'ANUAL';
-    fechaInicio: string;
-    fechaFin: string;
+    montoLimite: number;
+    anio: number;
+    mes: number;
 }
 
 class FinanceService {
@@ -107,9 +106,14 @@ class FinanceService {
     }
 
     // Métodos para Presupuestos
-    async getPresupuestos(): Promise<ApiResponse<Presupuesto[]>> {
+    async getPresupuestos(anio?: number, mes?: number): Promise<ApiResponse<Presupuesto[]>> {
         try {
-            const response = await axiosInstance.get<ApiResponse<Presupuesto[]>>('/finance/presupuestos');
+            const params = new URLSearchParams();
+            if (anio) params.append('anio', anio.toString());
+            if (mes) params.append('mes', mes.toString());
+            
+            const url = params.toString() ? `/finance/presupuestos?${params}` : '/finance/presupuestos';
+            const response = await axiosInstance.get<ApiResponse<Presupuesto[]>>(url);
             return response.data;
         } catch (error: any) {
             console.error('[FinanceService] Error getPresupuestos:', error);
@@ -119,6 +123,7 @@ class FinanceService {
 
     async createPresupuesto(data: PresupuestoRequest): Promise<ApiResponse<Presupuesto>> {
         try {
+            console.log('[FinanceService] Creating presupuesto with data:', data);
             const response = await axiosInstance.post<ApiResponse<Presupuesto>>('/finance/presupuestos', data);
             return response.data;
         } catch (error: any) {
@@ -147,13 +152,13 @@ class FinanceService {
         }
     }
 
-    async getEjecucionPresupuesto(id: string): Promise<ApiResponse<EjecucionPresupuesto>> {
+    async getEjecucionPresupuesto(anio: number, mes: number): Promise<ApiResponse<EjecucionPresupuesto[]>> {
         try {
-            const response = await axiosInstance.get<ApiResponse<EjecucionPresupuesto>>(`/finance/presupuestos/${id}/ejecucion`);
+            const response = await axiosInstance.get<ApiResponse<EjecucionPresupuesto[]>>(`/finance/presupuestos/ejecucion?anio=${anio}&mes=${mes}`);
             return response.data;
         } catch (error: any) {
             console.error('[FinanceService] Error getEjecucionPresupuesto:', error);
-            return { success: false, message: 'Error al obtener ejecución de presupuesto', data: null as any };
+            return { success: false, message: 'Error al obtener ejecución de presupuestos', data: [] };
         }
     }
 }

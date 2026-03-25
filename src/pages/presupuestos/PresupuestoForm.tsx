@@ -13,20 +13,34 @@ import financeService from '../../services/financeService';
 
 interface PresupuestoFormProps {
   presupuesto?: Presupuesto | null;
-  onSave: (presupuesto: Omit<Presupuesto, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => void;
+  onSave: (presupuesto: any) => void;
   onCancel: () => void;
 }
 
 const PresupuestoForm: React.FC<PresupuestoFormProps> = ({ presupuesto, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
     categoriaId: '',
-    montoMaximo: '',
-    periodo: 'MENSUAL' as 'MENSUAL' | 'ANUAL',
-    fechaInicio: '',
-    fechaFin: '',
+    montoLimite: '',
+    anio: new Date().getFullYear().toString(),
+    mes: (new Date().getMonth() + 1).toString(),
   });
 
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+
+  const meses = [
+    { value: 1, label: 'Enero' },
+    { value: 2, label: 'Febrero' },
+    { value: 3, label: 'Marzo' },
+    { value: 4, label: 'Abril' },
+    { value: 5, label: 'Mayo' },
+    { value: 6, label: 'Junio' },
+    { value: 7, label: 'Julio' },
+    { value: 8, label: 'Agosto' },
+    { value: 9, label: 'Septiembre' },
+    { value: 10, label: 'Octubre' },
+    { value: 11, label: 'Noviembre' },
+    { value: 12, label: 'Diciembre' },
+  ];
 
   useEffect(() => {
     const loadCategorias = async () => {
@@ -47,10 +61,9 @@ const PresupuestoForm: React.FC<PresupuestoFormProps> = ({ presupuesto, onSave, 
     if (presupuesto) {
       setFormData({
         categoriaId: presupuesto.categoriaId || '',
-        montoMaximo: (presupuesto.montoLimite || presupuesto.montoMaximo || 0).toString(),
-        periodo: 'MENSUAL', // Todos son mensuales según el backend
-        fechaInicio: presupuesto.periodoInicio || presupuesto.fechaInicio || '',
-        fechaFin: presupuesto.periodoFin || presupuesto.fechaFin || '',
+        montoLimite: presupuesto.montoLimite.toString(),
+        anio: presupuesto.anio.toString(),
+        mes: presupuesto.mes.toString(),
       });
     }
   }, [presupuesto]);
@@ -62,21 +75,33 @@ const PresupuestoForm: React.FC<PresupuestoFormProps> = ({ presupuesto, onSave, 
     }));
   };
 
-  const handlePeriodoChange = (periodo: 'MENSUAL' | 'ANUAL') => {
-    setFormData(prev => ({
-      ...prev,
-      periodo,
-    }));
+  const validateForm = () => {
+    const monto = parseFloat(formData.montoLimite);
+    const anio = parseInt(formData.anio);
+    const mes = parseInt(formData.mes);
+    
+    return (
+      formData.categoriaId &&
+      !isNaN(monto) && monto > 0 &&
+      !isNaN(anio) && anio >= 2000 && anio <= 2100 &&
+      !isNaN(mes) && mes >= 1 && mes <= 12
+    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      console.error('[PresupuestoForm] Form validation failed');
+      return;
+    }
+    
     console.log('[PresupuestoForm] Submitting form with data:', formData);
     onSave({
       ...formData,
-      montoLimite: parseFloat(formData.montoMaximo),
-      periodoInicio: formData.fechaInicio,
-      periodoFin: formData.fechaFin,
+      montoLimite: parseFloat(formData.montoLimite),
+      anio: parseInt(formData.anio),
+      mes: parseInt(formData.mes),
     });
   };
 
@@ -100,25 +125,13 @@ const PresupuestoForm: React.FC<PresupuestoFormProps> = ({ presupuesto, onSave, 
 
         <Box sx={{ display: 'flex', gap: 2 }}>
           <FormControl fullWidth required>
-            <InputLabel>Período</InputLabel>
-            <Select
-              value={formData.periodo}
-              onChange={(e) => handlePeriodoChange(e.target.value as 'MENSUAL' | 'ANUAL')}
-              label="Período"
-            >
-              <MenuItem value="MENSUAL">Mensual</MenuItem>
-              <MenuItem value="ANUAL">Anual</MenuItem>
-            </Select>
-          </FormControl>
-
-          <FormControl fullWidth required>
-            <InputLabel>Monto Máximo</InputLabel>
+            <InputLabel>Monto Límite</InputLabel>
             <TextField
               fullWidth
-              label="Monto Máximo"
+              label="Monto Límite"
               type="number"
-              value={formData.montoMaximo}
-              onChange={handleChange('montoMaximo')}
+              value={formData.montoLimite}
+              onChange={handleChange('montoLimite')}
               required
               inputProps={{
                 min: 0,
@@ -126,32 +139,35 @@ const PresupuestoForm: React.FC<PresupuestoFormProps> = ({ presupuesto, onSave, 
               }}
             />
           </FormControl>
-        </Box>
 
-        <Box sx={{ display: 'flex', gap: 2 }}>
           <FormControl fullWidth required>
-            <InputLabel>Fecha Inicio</InputLabel>
-            <TextField
-              fullWidth
-              type="date"
-              label="Fecha Inicio"
-              value={formData.fechaInicio}
-              onChange={handleChange('fechaInicio')}
-              required
-              InputLabelProps={{ shrink: true }}
-            />
+            <InputLabel>Mes</InputLabel>
+            <Select
+              value={formData.mes}
+              onChange={handleChange('mes')}
+              label="Mes"
+            >
+              {meses.map((mes) => (
+                <MenuItem key={mes.value} value={mes.value}>
+                  {mes.label}
+                </MenuItem>
+              ))}
+            </Select>
           </FormControl>
 
           <FormControl fullWidth required>
-            <InputLabel>Fecha Fin</InputLabel>
+            <InputLabel>Año</InputLabel>
             <TextField
               fullWidth
-              type="date"
-              label="Fecha Fin"
-              value={formData.fechaFin}
-              onChange={handleChange('fechaFin')}
+              label="Año"
+              type="number"
+              value={formData.anio}
+              onChange={handleChange('anio')}
               required
-              InputLabelProps={{ shrink: true }}
+              inputProps={{
+                min: 2000,
+                max: 2100,
+              }}
             />
           </FormControl>
         </Box>

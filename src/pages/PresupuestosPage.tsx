@@ -20,6 +20,11 @@ import {
   Alert,
   Chip,
   LinearProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  TextField,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -32,26 +37,43 @@ import PresupuestoForm from './presupuestos/PresupuestoForm';
 
 const PresupuestosPage: React.FC = () => {
   const [presupuestos, setPresupuestos] = useState<Presupuesto[]>([]);
-  const [ejecuciones, setEjecuciones] = useState<{ [key: string]: EjecucionPresupuesto }>({});
+  const [ejecuciones, setEjecuciones] = useState<EjecucionPresupuesto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingPresupuesto, setEditingPresupuesto] = useState<Presupuesto | null>(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+
+  const months = [
+    { value: 1, label: 'Enero' },
+    { value: 2, label: 'Febrero' },
+    { value: 3, label: 'Marzo' },
+    { value: 4, label: 'Abril' },
+    { value: 5, label: 'Mayo' },
+    { value: 6, label: 'Junio' },
+    { value: 7, label: 'Julio' },
+    { value: 8, label: 'Agosto' },
+    { value: 9, label: 'Septiembre' },
+    { value: 10, label: 'Octubre' },
+    { value: 11, label: 'Noviembre' },
+    { value: 12, label: 'Diciembre' },
+  ];
 
   useEffect(() => {
     loadPresupuestos();
-  }, []);
+  }, [selectedYear, selectedMonth]);
 
   const loadPresupuestos = async () => {
     try {
       setLoading(true);
-      const response = await financeService.getPresupuestos();
+      const response = await financeService.getPresupuestos(selectedYear, selectedMonth);
       console.log('[PresupuestosPage] Raw response:', response);
       console.log('[PresupuestosPage] Presupuestos data:', response.data);
       if (response.success) {
         setPresupuestos(response.data);
-        await loadEjecuciones(response.data);
+        await loadEjecuciones();
       } else {
         setError(response.message);
       }
@@ -63,23 +85,16 @@ const PresupuestosPage: React.FC = () => {
     }
   };
 
-  const loadEjecuciones = async (presupuestosList: Presupuesto[]) => {
-    const ejecucionesData: { [key: string]: EjecucionPresupuesto } = {};
-    
-    for (const presupuesto of presupuestosList) {
-      try {
-        const response = await financeService.getEjecucionPresupuesto(presupuesto.id!);
-        console.log(`[PresupuestosPage] Ejecucion for ${presupuesto.id}:`, response);
-        if (response.success) {
-          ejecucionesData[presupuesto.id!] = response.data;
-        }
-      } catch (error) {
-        console.error(`Error loading ejecucion for presupuesto ${presupuesto.id}:`, error);
+  const loadEjecuciones = async () => {
+    try {
+      const response = await financeService.getEjecucionPresupuesto(selectedYear, selectedMonth);
+      console.log('[PresupuestosPage] Ejecuciones response:', response);
+      if (response.success) {
+        setEjecuciones(response.data);
       }
+    } catch (error: any) {
+      console.error('Error loading ejecuciones:', error);
     }
-    
-    console.log('[PresupuestosPage] Final ejecuciones data:', ejecucionesData);
-    setEjecuciones(ejecucionesData);
   };
 
   const handleCreate = () => {
@@ -153,8 +168,8 @@ const PresupuestosPage: React.FC = () => {
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-CO');
+  const getMonthName = (month: number) => {
+    return months.find(m => m.value === month)?.label || '';
   };
 
   const getProgressColor = (percentage: number) => {
@@ -189,6 +204,41 @@ const PresupuestosPage: React.FC = () => {
             </Button>
           </Box>
 
+          {/* Filtros de Mes/Año */}
+          <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel>Mes</InputLabel>
+              <Select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                label="Mes"
+              >
+                {months.map((month) => (
+                  <MenuItem key={month.value} value={month.value}>
+                    {month.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            
+            <TextField
+              size="small"
+              label="Año"
+              type="number"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              inputProps={{
+                min: 2000,
+                max: 2100,
+              }}
+              sx={{ width: 100 }}
+            />
+            
+            <Typography variant="body2" color="text.secondary">
+              {getMonthName(selectedMonth)} {selectedYear}
+            </Typography>
+          </Box>
+
           {/* Debug info */}
           <Box sx={{ mb: 2, p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
             <Typography variant="body2">
@@ -217,7 +267,7 @@ const PresupuestosPage: React.FC = () => {
               <TableBody>
                 {console.log('[PresupuestosPage] About to render, presupuestos:', presupuestos)}
                 {presupuestos.map((presupuesto) => {
-                  const ejecucion = ejecuciones[presupuesto.id!];
+                  const ejecucion = ejecuciones.find(e => e.presupuestoId === presupuesto.id);
                   const porcentajeUtilizado = ejecucion ? (ejecucion.porcentajeUtilizado || 0) : 0;
                   
                   console.log('[PresupuestosPage] Rendering presupuesto:', presupuesto, 'ejecucion:', ejecucion);
@@ -226,11 +276,9 @@ const PresupuestosPage: React.FC = () => {
                     <TableRow key={presupuesto.id}>
                       <TableCell>{presupuesto.categoria?.nombre || '-'}</TableCell>
                       <TableCell>
-                        <Chip 
-                          label="MENSUAL"
-                          size="small"
-                          color="primary"
-                        />
+                        <Typography variant="body2">
+                          {getMonthName(presupuesto.mes)} {presupuesto.anio}
+                        </Typography>
                       </TableCell>
                       <TableCell align="right">
                         <Typography fontWeight="bold">
