@@ -47,10 +47,10 @@ const PresupuestoForm: React.FC<PresupuestoFormProps> = ({ presupuesto, onSave, 
     if (presupuesto) {
       setFormData({
         categoriaId: presupuesto.categoriaId || '',
-        montoMaximo: presupuesto.montoMaximo.toString(),
-        periodo: presupuesto.periodo,
-        fechaInicio: presupuesto.fechaInicio,
-        fechaFin: presupuesto.fechaFin,
+        montoMaximo: (presupuesto.montoLimite || presupuesto.montoMaximo || 0).toString(),
+        periodo: 'MENSUAL', // Todos son mensuales según el backend
+        fechaInicio: presupuesto.periodoInicio || presupuesto.fechaInicio || '',
+        fechaFin: presupuesto.periodoFin || presupuesto.fechaFin || '',
       });
     }
   }, [presupuesto]);
@@ -71,9 +71,12 @@ const PresupuestoForm: React.FC<PresupuestoFormProps> = ({ presupuesto, onSave, 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('[PresupuestoForm] Submitting form with data:', formData);
     onSave({
       ...formData,
-      montoMaximo: parseFloat(formData.montoMaximo),
+      montoLimite: parseFloat(formData.montoMaximo),
+      periodoInicio: formData.fechaInicio,
+      periodoFin: formData.fechaFin,
     });
   };
 

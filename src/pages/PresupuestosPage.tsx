@@ -5,25 +5,39 @@ import {
   CardContent,
   Typography,
   Button,
-  Grid,
-  LinearProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  Snackbar,
+  Alert,
   Chip,
-  CircularProgress,
+  LinearProgress,
 } from '@mui/material';
 import {
-  AccountBalance as BudgetIcon,
   Add as AddIcon,
-  TrendingUp as TrendingUpIcon,
-  TrendingDown as TrendingDownIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
 import financeService from '../services/financeService';
-import { Presupuesto } from '../types/finance';
+import { Presupuesto, EjecucionPresupuesto } from '../types/finance';
+import PresupuestoForm from './presupuestos/PresupuestoForm';
 
 const PresupuestosPage: React.FC = () => {
-  const navigate = useNavigate();
   const [presupuestos, setPresupuestos] = useState<Presupuesto[]>([]);
+  const [ejecuciones, setEjecuciones] = useState<{ [key: string]: EjecucionPresupuesto }>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [editingPresupuesto, setEditingPresupuesto] = useState<Presupuesto | null>(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
 
   useEffect(() => {
     loadPresupuestos();
@@ -33,15 +47,103 @@ const PresupuestosPage: React.FC = () => {
     try {
       setLoading(true);
       const response = await financeService.getPresupuestos();
-      
+      console.log('[PresupuestosPage] Raw response:', response);
+      console.log('[PresupuestosPage] Presupuestos data:', response.data);
       if (response.success) {
         setPresupuestos(response.data);
+        await loadEjecuciones(response.data);
+      } else {
+        setError(response.message);
       }
-    } catch (error) {
+    } catch (error: any) {
+      setError('Error al cargar presupuestos');
       console.error('Error loading presupuestos:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadEjecuciones = async (presupuestosList: Presupuesto[]) => {
+    const ejecucionesData: { [key: string]: EjecucionPresupuesto } = {};
+    
+    for (const presupuesto of presupuestosList) {
+      try {
+        const response = await financeService.getEjecucionPresupuesto(presupuesto.id!);
+        console.log(`[PresupuestosPage] Ejecucion for ${presupuesto.id}:`, response);
+        if (response.success) {
+          ejecucionesData[presupuesto.id!] = response.data;
+        }
+      } catch (error) {
+        console.error(`Error loading ejecucion for presupuesto ${presupuesto.id}:`, error);
+      }
+    }
+    
+    console.log('[PresupuestosPage] Final ejecuciones data:', ejecucionesData);
+    setEjecuciones(ejecucionesData);
+  };
+
+  const handleCreate = () => {
+    console.log('[PresupuestosPage] handleCreate called');
+    setEditingPresupuesto(null);
+    setOpenDialog(true);
+    console.log('[PresupuestosPage] Dialog should open now');
+  };
+
+  const handleEdit = (presupuesto: Presupuesto) => {
+    setEditingPresupuesto(presupuesto);
+    setOpenDialog(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('¿Está seguro de eliminar este presupuesto?')) {
+      try {
+        const response = await financeService.deletePresupuesto(id);
+        if (response.success) {
+          setPresupuestos(presupuestos.filter(pres => pres.id !== id));
+          setSnackbar({ open: true, message: 'Presupuesto eliminado correctamente', severity: 'success' });
+        } else {
+          setSnackbar({ open: true, message: response.message, severity: 'error' });
+        }
+      } catch (error: any) {
+        setSnackbar({ open: true, message: 'Error al eliminar presupuesto', severity: 'error' });
+        console.error('Error deleting presupuesto:', error);
+      }
+    }
+  };
+
+  const handleSave = async (presupuestoData: any) => {
+    try {
+      let response;
+      if (editingPresupuesto) {
+        response = await financeService.updatePresupuesto(editingPresupuesto.id!, presupuestoData);
+      } else {
+        response = await financeService.createPresupuesto(presupuestoData);
+      }
+
+      if (response.success) {
+        await loadPresupuestos();
+        setOpenDialog(false);
+        setSnackbar({ 
+          open: true, 
+          message: editingPresupuesto ? 'Presupuesto actualizado correctamente' : 'Presupuesto creado correctamente', 
+          severity: 'success' 
+        });
+      } else {
+        setSnackbar({ open: true, message: response.message, severity: 'error' });
+      }
+    } catch (error: any) {
+      setSnackbar({ open: true, message: 'Error al guardar presupuesto', severity: 'error' });
+      console.error('Error saving presupuesto:', error);
+    }
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setEditingPresupuesto(null);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
   const formatCurrency = (amount: number) => {
@@ -55,198 +157,164 @@ const PresupuestosPage: React.FC = () => {
     return new Date(dateString).toLocaleDateString('es-CO');
   };
 
-  const getPorcentajeColor = (porcentaje: number) => {
-    if (porcentaje >= 90) return 'error';
-    if (porcentaje >= 75) return 'warning';
+  const getProgressColor = (percentage: number) => {
+    if (percentage >= 90) return 'error';
+    if (percentage >= 75) return 'warning';
     return 'success';
   };
 
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
+        <Typography>Cargando...</Typography>
       </Box>
     );
   }
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1A1A1A', mb: 1 }}>
-          Presupuestos
-        </Typography>
-        <Typography variant="body2" sx={{ color: '#666666' }}>
-          Gestiona tus límites de gasto por categoría
-        </Typography>
-      </Box>
-
-      {/* Botón Crear */}
-      <Box sx={{ mb: 4 }}>
-        <Button
-          variant="contained"
-          size="large"
-          startIcon={<AddIcon />}
-          onClick={() => navigate('/presupuestos/create')}
-          sx={{ minWidth: 200 }}
-        >
-          Crear Presupuesto
-        </Button>
-      </Box>
-
-      {/* Grid de Presupuestos */}
-      <Grid container spacing={3}>
-        {presupuestos.map((presupuesto) => {
-          const porcentajeUsado = Math.min((presupuesto.montoUsado || 0) / presupuesto.montoMaximo * 100, 100);
-          const color = getPorcentajeColor(porcentajeUsado);
-          
-          return (
-            <Grid item xs={12} sm={6} md={4} key={presupuesto.id}>
-              <Card sx={{ height: '100%', position: 'relative' }}>
-                <CardContent>
-                  {/* Header */}
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Box>
-                      <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-                        {presupuesto.categoria?.nombre || 'Sin categoría'}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        {presupuesto.periodo}
-                      </Typography>
-                    </Box>
-                    <Chip
-                      label={presupuesto.periodo}
-                      color={presupuesto.periodo === 'MENSUAL' ? 'primary' : 'secondary'}
-                      size="small"
-                    />
-                  </Box>
-
-                  {/* Monto Máximo */}
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" sx={{ color: 'text.secondary', mb: 0.5 }}>
-                      Límite
-                    </Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
-                      {formatCurrency(presupuesto.montoMaximo)}
-                    </Typography>
-                  </Box>
-
-                  {/* Monto Usado */}
-                  <Box sx={{ mb: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        Gastado
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <TrendingDownIcon sx={{ color: 'secondary.main', fontSize: 16 }} />
-                        <Typography 
-                          variant="h6" 
-                          sx={{ 
-                            color: 'secondary.main', 
-                            fontWeight: 600 
-                          }}
-                        >
-                          {formatCurrency(presupuesto.montoUsado || 0)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Box>
-
-                  {/* Barra de Progreso */}
-                  <Box sx={{ mb: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        Uso
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                        {porcentajeUsado.toFixed(1)}%
-                      </Typography>
-                    </Box>
-                    <LinearProgress
-                      variant="determinate"
-                      value={porcentajeUsado}
-                      sx={{
-                        height: 8,
-                        borderRadius: 4,
-                        backgroundColor: 'grey.200',
-                        '& .MuiLinearProgress-bar': {
-                          backgroundColor: color === 'error' ? '#D32F2F' : 
-                                         color === 'warning' ? '#FF9800' : '#2E7D32',
-                        },
-                      }}
-                    />
-                  </Box>
-
-                  {/* Disponible */}
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                      Disponible
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <TrendingUpIcon sx={{ color: 'primary.main', fontSize: 16 }} />
-                      <Typography 
-                        variant="h6" 
-                        sx={{ 
-                          color: 'primary.main', 
-                          fontWeight: 600 
-                        }}
-                      >
-                        {formatCurrency(presupuesto.montoMaximo - (presupuesto.montoUsado || 0))}
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  {/* Fechas */}
-                  <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #E0E0E0' }}>
-                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                      Desde: {formatDate(presupuesto.fechaInicio)} - Hasta: {formatDate(presupuesto.fechaFin)}
-                    </Typography>
-                  </Box>
-                </CardContent>
-
-                {/* Indicador de Alerta */}
-                {porcentajeUsado >= 90 && (
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 10,
-                      right: 10,
-                      width: 12,
-                      height: 12,
-                      borderRadius: '50%',
-                      backgroundColor: '#D32F2F',
-                      animation: 'pulse 2s infinite',
-                    }}
-                  />
-                )}
-              </Card>
-            </Grid>
-          );
-        })}
-      </Grid>
-
-      {/* Estado Vacío */}
-      {presupuestos.length === 0 && (
-        <Card>
-          <CardContent sx={{ textAlign: 'center', py: 8 }}>
-            <BudgetIcon sx={{ fontSize: 64, color: 'action.disabled', mb: 2 }} />
-            <Typography variant="h6" sx={{ color: 'text.secondary', mb: 2 }}>
-              No hay presupuestos registrados
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
-              Crea tu primer presupuesto para empezar a controlar tus gastos
-            </Typography>
+      <Card>
+        <CardContent>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+            <Typography variant="h4">Presupuestos</Typography>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => navigate('/presupuestos/create')}
-              sx={{ minWidth: 200 }}
+              onClick={() => {
+                console.log('[PresupuestosPage] Button clicked');
+                handleCreate();
+              }}
             >
-              Crear Primer Presupuesto
+              Nuevo Presupuesto
             </Button>
-          </CardContent>
-        </Card>
-      )}
+          </Box>
+
+          {/* Debug info */}
+          <Box sx={{ mb: 2, p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
+            <Typography variant="body2">
+              Debug: presupuestos.length = {presupuestos.length}, loading = {loading.toString()}, error = {error || 'null'}
+            </Typography>
+          </Box>
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Categoría</TableCell>
+                  <TableCell>Período</TableCell>
+                  <TableCell align="right">Monto Máximo</TableCell>
+                  <TableCell align="right">Ejecutado</TableCell>
+                  <TableCell align="center">Ejecución</TableCell>
+                  <TableCell align="center">Acciones</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {console.log('[PresupuestosPage] About to render, presupuestos:', presupuestos)}
+                {presupuestos.map((presupuesto) => {
+                  const ejecucion = ejecuciones[presupuesto.id!];
+                  const porcentajeUtilizado = ejecucion ? (ejecucion.porcentajeUtilizado || 0) : 0;
+                  
+                  console.log('[PresupuestosPage] Rendering presupuesto:', presupuesto, 'ejecucion:', ejecucion);
+                  
+                  return (
+                    <TableRow key={presupuesto.id}>
+                      <TableCell>{presupuesto.categoria?.nombre || '-'}</TableCell>
+                      <TableCell>
+                        <Chip 
+                          label="MENSUAL"
+                          size="small"
+                          color="primary"
+                        />
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography fontWeight="bold">
+                          {formatCurrency(presupuesto.montoLimite || 0)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography color={(porcentajeUtilizado || 0) > 100 ? 'error.main' : 'text.primary'}>
+                          {ejecucion ? formatCurrency(ejecucion.montoEjecutado) : '$0'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <LinearProgress
+                            variant="determinate"
+                            value={Math.min(porcentajeUtilizado || 0, 100)}
+                            sx={{ 
+                              flex: 1,
+                              height: 8,
+                              borderRadius: 4,
+                              backgroundColor: 'grey.200',
+                              '& .MuiLinearProgress-bar': {
+                                backgroundColor: (porcentajeUtilizado || 0) >= 90 ? '#f44336' : 
+                                               (porcentajeUtilizado || 0) >= 75 ? '#ff9800' : '#4caf50'
+                              }
+                            }}
+                          />
+                          <Typography variant="body2" sx={{ minWidth: 45 }}>
+                            {(porcentajeUtilizado || 0).toFixed(1)}%
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell align="center">
+                        <IconButton
+                          color="primary"
+                          onClick={() => handleEdit(presupuesto)}
+                          size="small"
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
+                          color="error"
+                          onClick={() => handleDelete(presupuesto.id!)}
+                          size="small"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+                {presupuestos.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center">
+                      <Typography variant="body2" color="textSecondary">
+                        No hay presupuestos registrados
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </CardContent>
+      </Card>
+
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+        <DialogTitle>
+          {editingPresupuesto ? 'Editar Presupuesto' : 'Nuevo Presupuesto'}
+        </DialogTitle>
+        <DialogContent>
+          <PresupuestoForm
+            presupuesto={editingPresupuesto}
+            onSave={handleSave}
+            onCancel={handleCloseDialog}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

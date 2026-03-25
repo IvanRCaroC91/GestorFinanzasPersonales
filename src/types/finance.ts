@@ -31,11 +31,13 @@ export interface Presupuesto {
   id?: string;
   categoriaId: string;
   categoria?: Categoria;
-  montoMaximo: number;
-  montoUsado?: number;
-  periodo: 'MENSUAL' | 'ANUAL';
-  fechaInicio: string;
-  fechaFin: string;
+  montoLimite: number;
+  montoMaximo?: number; // Para compatibilidad
+  periodoInicio: string;
+  periodoFin: string;
+  fechaInicio?: string; // Para compatibilidad
+  fechaFin?: string; // Para compatibilidad
+  periodo?: 'MENSUAL' | 'ANUAL'; // Para compatibilidad
   userId: string;
   createdAt?: string;
   updatedAt?: string;
