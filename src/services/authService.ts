@@ -1,108 +1,185 @@
-// Servicio de autenticación para manejar la comunicación con el backend Spring Boot
-import API_ENDPOINTS from '../constants/api';
-import type { LoginRequest, LoginResponse, AuthError, AuthHeaders } from '../types';
+import axiosInstance from '../api/axiosConfig';
+
+interface LoginRequest {
+    username: string;
+    password: string;
+}
+
+interface LoginResponse {
+    success: boolean;
+    message: string;
+    token?: string;
+    user?: {
+        id: string;
+        username: string;
+        email: string;
+        nombreCompleto?: string;
+        iniciales?: string;
+    };
+    userId?: string;
+}
+
+interface JWTPayload {
+    sub: string;
+    username: string;
+    email: string;
+    exp: number;
+    iat: number;
+    userId?: string;
+}
 
 class AuthService {
-  /**
-   * Inicia sesión con las credenciales proporcionadas
-   * @param credentials - Credenciales de login (username y password)
-   * @returns Promise con la respuesta del login
-   */
-  async login(credentials: LoginRequest): Promise<LoginResponse> {
-    try {
-      const response = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
+    private readonly TOKEN_KEY = 'token';
+    private readonly USER_KEY = 'user';
+    private readonly USER_ID_KEY = 'userId';
 
-      const data = await response.json();
+    async login(credentials: LoginRequest): Promise<LoginResponse> {
+        try {
+            console.log('[AuthService] Attempting login...');
+            const response = await axiosInstance.post('/auth/login', credentials);
+            const data = response.data;
 
-      if (!response.ok) {
-        throw {
-          message: data.message || 'Error en el inicio de sesión',
-          status: response.status,
-        } as AuthError;
-      }
+            if (data.success && data.token) {
+                this.setToken(data.token);
 
-      // Si el login es exitoso, guardar el token en localStorage
-      if (data.success && data.token) {
-        localStorage.setItem('authToken', data.token);
-      }
+                const userId = data.userId || data.user?.id || this.extractUserIdFromToken(data.token);
+                const validUserId = this.isValidUUID(userId) ? userId : this.generateUUID();
 
-      return data;
-    } catch (error) {
-      if (error instanceof Error) {
-        throw {
-          message: error.message,
-        } as AuthError;
-      }
-      throw error;
-    }
-  }
+                if (validUserId) this.setUserId(validUserId);
 
-  /**
-   * Obtiene el token JWT almacenado en localStorage
-   * @returns Token JWT o null si no existe
-   */
-  getToken(): string | null {
-    return localStorage.getItem('authToken');
-  }
+                const userData = {
+                    id: validUserId,
+                    username: data.user?.username || credentials.username,
+                    email: data.user?.email || '',
+                    nombreCompleto: data.user?.nombreCompleto || '',
+                    iniciales: data.user?.iniciales || ''
+                };
 
-  /**
-   * Verifica si hay un usuario autenticado
-   * @returns true si existe un token, false en caso contrario
-   */
-  isAuthenticated(): boolean {
-    const token = this.getToken();
-    return token !== null && token !== '';
-  }
+                this.setUser(userData);
+                data.user = userData;
 
-  /**
-   * Cierra sesión eliminando el token del localStorage
-   */
-  logout(): void {
-    localStorage.removeItem('authToken');
-  }
+                console.log('[AuthService] Login successful, user data stored:', userData);
+            }
 
-  /**
-   * Obtiene los headers para peticiones autenticadas
-   * @returns Headers con el token de autorización Bearer
-   */
-  getAuthHeaders(): AuthHeaders {
-    const token = this.getToken();
-    const headers: AuthHeaders = {
-      'Content-Type': 'application/json',
-    };
+            return data;
+        } catch (error: any) {
+            console.error('[AuthService] Login error:', error);
 
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+            if (error.response) {
+                const { status, data } = error.response;
+                if (status === 401) throw new Error(data?.message || 'Credenciales inválidas');
+                else if (status === 429) throw new Error('Demasiados intentos. Por favor, espere unos minutos.');
+                else if (status >= 500) throw new Error('Error del servidor. Intente nuevamente más tarde.');
+                throw new Error(data?.message || 'Error en la autenticación');
+            } else if (error.request) throw new Error('Error de conexión. Verifique su red.');
+            else throw new Error(error.message || 'Error desconocido');
+        }
     }
 
-    return headers;
-  }
+    getToken(): string | null {
+        try {
+            return localStorage.getItem(this.TOKEN_KEY);
+        } catch {
+            return null;
+        }
+    }
 
-  /**
-   * Realiza una petición autenticada al backend
-   * @param url - URL del endpoint
-   * @param options - Opciones de la petición fetch
-   * @returns Promise con la respuesta
-   */
-  async authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
-    const authHeaders = this.getAuthHeaders();
-    
-    const fetchOptions: RequestInit = {
-      ...options,
-      headers: {
-        ...authHeaders,
-        ...options.headers,
-      },
-    };
+    private setToken(token: string): void {
+        localStorage.setItem(this.TOKEN_KEY, token);
+    }
 
-    return fetch(url, fetchOptions);
-  }
+    getUserId(): string | null {
+        return localStorage.getItem(this.USER_ID_KEY);
+    }
+
+    private setUserId(userId: string): void {
+        localStorage.setItem(this.USER_ID_KEY, userId);
+    }
+
+    getUser(): any | null {
+        try {
+            const userStr = localStorage.getItem(this.USER_KEY);
+            return userStr ? JSON.parse(userStr) : null;
+        } catch {
+            return null;
+        }
+    }
+
+    private setUser(user: any): void {
+        localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    }
+
+    isAuthenticated(): boolean {
+        try {
+            const token = this.getToken();
+            if (!token || token.trim() === '') return false;
+
+            const parts = token.split('.');
+            if (parts.length !== 3) {
+                this.logout();
+                return false;
+            }
+
+            const payload = this.decodeToken(token);
+            if (!payload) {
+                this.logout();
+                return false;
+            }
+
+            const currentTime = Math.floor(Date.now() / 1000);
+            const expirationTime = payload.exp;
+            if (!expirationTime) return true;
+
+            if (expirationTime - currentTime <= 0) {
+                this.logout();
+                return false;
+            }
+
+            return true;
+        } catch {
+            this.logout();
+            return false;
+        }
+    }
+
+    private decodeToken(token: string): JWTPayload | null {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(
+                atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
+            );
+            return JSON.parse(jsonPayload);
+        } catch {
+            return null;
+        }
+    }
+
+    private extractUserIdFromToken(token: string): string | null {
+        const payload = this.decodeToken(token);
+        return payload?.userId || payload?.sub || null;
+    }
+
+    logout(): void {
+        localStorage.removeItem(this.TOKEN_KEY);
+        localStorage.removeItem(this.USER_ID_KEY);
+        localStorage.removeItem(this.USER_KEY);
+        console.log('[AuthService] Logged out');
+    }
+
+    private isValidUUID(uuid: string | null): boolean {
+        if (!uuid) return false;
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        return uuidRegex.test(uuid);
+    }
+
+    private generateUUID(): string {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
 }
 
 export default new AuthService();

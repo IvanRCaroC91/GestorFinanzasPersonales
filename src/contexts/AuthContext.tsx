@@ -1,88 +1,114 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import authService from '../services/authService';
-import type { User, AuthContextType, LoginRequest } from '../types';
 
-// Props para el provider
-interface AuthProviderProps {
-  children: ReactNode;
+interface User {
+    id: string;
+    username: string;
+    email: string;
+    nombreCompleto?: string;
+    iniciales?: string;
 }
 
-// Provider del contexto de autenticación
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+interface AuthState {
+    user: User | null;
+    isAuthenticated: boolean;
+    isLoading: boolean;
+    error: string | null;
+}
 
-  // Verificar si hay un token al cargar la aplicación
-  useEffect(() => {
-    const checkAuthStatus = () => {
-      try {
-        const isAuthenticated = authService.isAuthenticated();
-        if (isAuthenticated) {
-          // Aquí podrías decodificar el token para obtener información del usuario
-          // Por ahora, simplemente marcamos como autenticado
-          setUser({ username: 'user' }); // Esto se puede mejorar decodificando el JWT
-        }
-      } catch (error) {
-        console.error('Error verificando estado de autenticación:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+interface AuthContextType extends AuthState {
+    login: (credentials: { username: string; password: string }) => Promise<{ success: boolean; message?: string }>;
+    logout: () => void;
+    clearError: () => void;
+    refreshToken: () => Promise<boolean>;
+}
 
-    checkAuthStatus();
-  }, []);
+interface AuthProviderProps {
+    children: ReactNode;
+}
 
-  /**
-   * Función para iniciar sesión
-   * @param credentials - Credenciales del usuario
-   * @returns Resultado del login
-   */
-  const login = async (credentials: LoginRequest): Promise<{ success: boolean; message?: string }> => {
-    try {
-      const response = await authService.login(credentials);
-      
-      if (response.success) {
-        setUser({ username: credentials.username });
-        return { success: true };
-      } else {
-        return { success: false, message: response.message || 'Error en el inicio de sesión' };
-      }
-    } catch (error: any) {
-      const errorMessage = error.message || 'Credenciales inválidas';
-      return { success: false, message: errorMessage };
-    }
-  };
-
-  /**
-   * Función para cerrar sesión
-   */
-  const logout = () => {
-    authService.logout();
-    setUser(null);
-  };
-
-  const value: AuthContextType = {
-    user,
-    isAuthenticated: !!user,
-    isLoading,
-    login,
-    logout,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-// Crear el contexto
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Hook para usar el contexto de autenticación
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+    const [state, setState] = useState<AuthState>({
+        user: null,
+        isAuthenticated: false,
+        isLoading: true,
+        error: null,
+    });
+
+    const updateState = useCallback((updates: Partial<AuthState>) => {
+        setState(prev => ({ ...prev, ...updates }));
+    }, []);
+
+    useEffect(() => {
+        // 🔹 FORZAR logout al iniciar la app
+        console.log('[AuthContext] Forzando logout inicial para que siempre se pida login');
+        authService.logout();
+        updateState({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: null,
+        });
+    }, [updateState]);
+
+    const login = useCallback(async (credentials: { username: string; password: string }) => {
+        try {
+            updateState({ isLoading: true, error: null });
+            const response = await authService.login(credentials);
+
+            if (response.success && response.user) {
+                updateState({
+                    user: response.user,
+                    isAuthenticated: true,
+                    isLoading: false,
+                    error: null,
+                });
+                return { success: true };
+            } else {
+                const errorMessage = response.message || 'Credenciales inválidas';
+                updateState({ isLoading: false, error: errorMessage });
+                return { success: false, message: errorMessage };
+            }
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || error.message || 'Error de conexión';
+            updateState({ isLoading: false, error: errorMessage });
+            return { success: false, message: errorMessage };
+        }
+    }, [updateState]);
+
+    const logout = useCallback(() => {
+        authService.logout();
+        updateState({ user: null, isAuthenticated: false, isLoading: false, error: null });
+        if (typeof window !== 'undefined') window.location.href = '/login';
+    }, [updateState]);
+
+    const clearError = useCallback(() => updateState({ error: null }), [updateState]);
+
+    const refreshToken = useCallback(async (): Promise<boolean> => {
+        try {
+            const isValid = authService.isAuthenticated();
+            if (!isValid) logout();
+            return isValid;
+        } catch {
+            logout();
+            return false;
+        }
+    }, [logout]);
+
+    return (
+        <AuthContext.Provider value={{ ...state, login, logout, clearError, refreshToken }}>
+            {children}
+        </AuthContext.Provider>
+    );
+};
+
 export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
-  }
-  return context;
+    const context = useContext(AuthContext);
+    if (!context) throw new Error('useAuth debe ser usado dentro de un AuthProvider');
+    return context;
 };
 
 export default AuthContext;
