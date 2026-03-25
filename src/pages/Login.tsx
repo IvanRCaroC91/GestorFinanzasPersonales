@@ -17,14 +17,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   
   // Usar hook para manejar redirección después del login exitoso
-  useReturnTo();
-
-  // Solo redirigir si está autenticado Y no está cargando
-  useEffect(() => {
-    if (isAuthenticated && !authLoading) {
-      console.log('[Login] User authenticated and not loading, useReturnTo will handle redirection');
-    }
-  }, [isAuthenticated, authLoading]);
+    useReturnTo(isAuthenticated, authLoading);
 
   // Limpiar error al cambiar los datos del formulario
   useEffect(() => {
@@ -78,15 +71,6 @@ const Login = () => {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-
-  // Si está autenticado y no está cargando, mostrar loading
-  if (isAuthenticated && !authLoading) {
-    return (
-      <Container maxWidth="sm" sx={{ mt: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-        <CircularProgress size={40} />
-      </Container>
-    );
-  }
 
   // Si está cargando la autenticación inicial
   if (authLoading) {

@@ -149,6 +149,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       isLoading: false,
       error: null,
     });
+    // 🔧 CLAVE: Forzar redirección para evitar loops
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
   }, [updateState]);
 
   /**
