@@ -34,6 +34,7 @@ import {
 } from '@mui/icons-material';
 import financeService from '../../services/financeService';
 import { Categoria } from '../../types/finance';
+import { tipoCategoriaLabel } from '../../utils/tipoMovimientoMapper';
 import CategoriaForm from './CategoriaForm';
 
 const CategoriasPage: React.FC = () => {
@@ -197,8 +198,8 @@ const CategoriasPage: React.FC = () => {
                   label="Tipo"
                 >
                   <MenuItem value="">Todos</MenuItem>
-                  <MenuItem value="INGRESO">Ingresos</MenuItem>
-                  <MenuItem value="GASTO">Gastos</MenuItem>
+                  <MenuItem value="INGRESO">{tipoCategoriaLabel.INGRESO}</MenuItem>
+                  <MenuItem value="EGRESO">{tipoCategoriaLabel.EGRESO}</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -245,7 +246,7 @@ const CategoriasPage: React.FC = () => {
                     <TableCell>{categoria.nombre}</TableCell>
                     <TableCell>
                       <Chip 
-                        label={categoria.tipo} 
+                        label={tipoCategoriaLabel[categoria.tipo as keyof typeof tipoCategoriaLabel]} 
                         color={categoria.tipo === 'INGRESO' ? 'success' : 'warning'}
                         size="small"
                       />

@@ -9,6 +9,7 @@ import {
     Select,
 } from '@mui/material';
 import { Categoria } from '../../types/finance';
+import { tipoCategoriaLabel } from '../../utils/tipoMovimientoMapper';
 
 interface CategoriaFormProps {
     categoria?: Categoria | null;
@@ -66,8 +67,8 @@ const CategoriaForm: React.FC<CategoriaFormProps> = ({ categoria, onSave, onCanc
                     onChange={(e) => setTipo(e.target.value as 'INGRESO' | 'EGRESO')}
                     label="Tipo"
                 >
-                    <MenuItem value="INGRESO">Ingresos</MenuItem>
-                    <MenuItem value="EGRESO">Gastos</MenuItem>
+                    <MenuItem value="INGRESO">{tipoCategoriaLabel.INGRESO}</MenuItem>
+                    <MenuItem value="EGRESO">{tipoCategoriaLabel.EGRESO}</MenuItem>
                 </Select>
             </FormControl>
 

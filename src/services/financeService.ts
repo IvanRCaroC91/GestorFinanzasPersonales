@@ -3,17 +3,17 @@ import { Categoria, Movimiento, Presupuesto, EjecucionPresupuesto } from '../typ
 
 export interface CategoriaRequest {
     nombre: string;
-    tipo: 'INGRESO' | 'EGRESO';
+    tipo: 'INGRESO' | 'GASTO' | 'EGRESO';
     tipoGasto?: 'NECESARIO' | 'NO_NECESARIO' | 'OCASIONAL';
     categoriaPadreId?: string | null;
 }
 
 export interface MovimientoRequest {
-    monto: number;
+    valor: number;
     descripcion: string;
     categoriaId: string;
     fecha: string;
-    tipo: 'INGRESO' | 'GASTO';
+    tipo: 'INGRESO' | 'EGRESO';
 }
 
 export interface PresupuestoRequest {
@@ -77,10 +77,19 @@ class FinanceService {
 
     async createMovimiento(data: MovimientoRequest): Promise<ApiResponse<Movimiento>> {
         try {
+            console.log('[FinanceService] Creating movimiento with data:', data);
+            console.time('movimiento-request');
+            
             const response = await axiosInstance.post<ApiResponse<Movimiento>>('/finance/movimientos', data);
+            
+            console.timeEnd('movimiento-request');
             return response.data;
         } catch (error: any) {
+            console.timeEnd('movimiento-request');
             console.error('[FinanceService] Error createMovimiento:', error);
+            console.error('[FinanceService] Error response data:', error.response?.data);
+            console.error('[FinanceService] Error code:', error.code);
+            console.error('[FinanceService] Error message:', error.message);
             return { success: false, message: error.response?.data?.message || 'Error al crear movimiento', data: null as any };
         }
     }

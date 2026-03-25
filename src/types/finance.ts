@@ -7,7 +7,7 @@ export interface ApiResponse<T = any> {
 export interface Categoria {
   id?: string;
   nombre: string;
-  tipo: 'INGRESO' | 'GASTO';
+  tipo: 'INGRESO' | 'GASTO' | 'EGRESO';
   tipoGasto?: string;
   userId: string;
   createdAt?: string;
@@ -16,12 +16,12 @@ export interface Categoria {
 
 export interface Movimiento {
   id?: string;
-  monto: number;
+  valor: number;
   descripcion: string;
   categoriaId: string;
   categoria?: Categoria;
   fecha: string;
-  tipo: 'INGRESO' | 'GASTO';
+  tipo: 'INGRESO' | 'EGRESO';
   userId: string;
   createdAt?: string;
   updatedAt?: string;
