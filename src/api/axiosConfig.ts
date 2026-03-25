@@ -1,10 +1,40 @@
 import axios from 'axios';
+import authService from '../services/authService';
 
 export interface ApiResponse<T = any> {
   success: boolean;
   message: string;
   data: T;
 }
+
+// Lista de endpoints que no requieren autenticación
+const PUBLIC_ENDPOINTS = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/refresh',
+  '/health',
+  '/public'
+];
+
+// Lista de endpoints que requieren headers especiales
+const PROTECTED_ENDPOINTS = [
+  '/finance/',
+  '/protected/',
+  '/user/',
+  '/admin/'
+];
+
+// Función para determinar si un endpoint es público
+const isPublicEndpoint = (url?: string): boolean => {
+  if (!url) return false;
+  return PUBLIC_ENDPOINTS.some(endpoint => url.includes(endpoint));
+};
+
+// Función para determinar si un endpoint requiere headers especiales
+const isProtectedEndpoint = (url?: string): boolean => {
+  if (!url) return false;
+  return PROTECTED_ENDPOINTS.some(endpoint => url.includes(endpoint));
+};
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/api/v1` : '/api/v1',
@@ -17,24 +47,23 @@ const axiosInstance = axios.create({
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId'); // userId dinámico del backend
+    const url = config.url || '';
+    const shouldAddAuth = !isPublicEndpoint(url) && isProtectedEndpoint(url);
     
-    // Determinar si el endpoint requiere autenticación
-    const isAuthEndpoint = config.url?.includes('/auth/login') || config.url?.includes('/auth/register');
-    const isProtectedEndpoint = config.url?.includes('/finance/') || config.url?.includes('/protected/');
-    
-    // Solo agregar headers en endpoints protegidos (no en login/register)
-    if (!isAuthEndpoint && isProtectedEndpoint) {
+    if (shouldAddAuth) {
+      const token = authService.getToken();
+      const userId = authService.getUserId();
+      
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+      
       if (userId) {
         config.headers['X-User-Id'] = userId;
       }
     }
     
-    console.log(`[API] ${config.method?.toUpperCase()} ${config.url} | Auth: ${!isAuthEndpoint && isProtectedEndpoint ? 'YES' : 'NO'} | UserId: ${userId || 'NONE'}`);
+    console.log(`[API] ${config.method?.toUpperCase()} ${url} | Auth: ${shouldAddAuth ? 'YES' : 'NO'} | UserId: ${authService.getUserId() || 'NONE'}`);
     return config;
   },
   (error) => {
@@ -51,39 +80,56 @@ axiosInstance.interceptors.response.use(
   },
   (error) => {
     const { response, request, config } = error;
+    const url = config?.url || 'unknown';
     
     if (response) {
       const { status, data } = response;
-      const url = config?.url || 'unknown';
       
       console.error(`[API ERROR] ${config?.method?.toUpperCase()} ${url} → ${status}: ${data?.message || 'Unknown error'}`);
       
+      // Manejar errores de autenticación
+      if (status === 401 || status === 403) {
+        console.log(`[API] ${status === 401 ? 'Unauthorized' : 'Forbidden'} - clearing session`);
+        authService.logout();
+        
+        // Evitar redirección infinita
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
+        
+        return Promise.reject(error);
+      }
+      
+      // Manejar otros errores HTTP
       switch (status) {
-        case 401:
-          console.log('[API] Unauthorized - clearing session');
-          localStorage.removeItem('token');
-          localStorage.removeItem('userId');
-          localStorage.removeItem('user');
-          window.location.href = '/login';
+        case 400:
+          console.error('[API] Bad Request - validation error');
           break;
-          
-        case 403:
-          console.log('[API] Forbidden - clearing session');
-          localStorage.removeItem('token');
-          localStorage.removeItem('userId');
-          localStorage.removeItem('user');
-          window.location.href = '/login';
+        case 404:
+          console.error('[API] Not Found - resource does not exist');
           break;
-          
+        case 429:
+          console.error('[API] Too Many Requests - rate limit exceeded');
+          break;
         case 500:
-          console.error('[API] Server Error - controlled');
+          console.error('[API] Server Error - internal server error');
           break;
-          
+        case 502:
+        case 503:
+        case 504:
+          console.error('[API] Service Unavailable - server down');
+          break;
         default:
           console.error(`[API] Unhandled error: ${status}`);
       }
     } else if (request) {
       console.error('[API ERROR] No response received:', request);
+      // Error de red o conexión
+      if (request.code === 'ECONNABORTED') {
+        console.error('[API] Request timeout');
+      } else if (request.code === 'ERR_NETWORK') {
+        console.error('[API] Network error');
+      }
     } else {
       console.error('[API ERROR] Request setup error:', error.message);
     }

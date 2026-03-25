@@ -1,36 +1,37 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Card, TextField, Button, Typography, Box, Alert, InputAdornment, IconButton } from '@mui/material';
+import { Container, Card, TextField, Button, Typography, Box, Alert, InputAdornment, IconButton, CircularProgress } from '@mui/material';
 import { Visibility, VisibilityOff, Person } from '@mui/icons-material';
 import authService from '../services/authService';
 import { useAuth } from '../contexts/AuthContext';
+import { ThemeToggle } from '../components/ThemeToggle';
+import { useReturnTo } from '../hooks/useReturnTo';
 
 const Login = () => {
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, isLoading: authLoading, error: authError, clearError } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     password: '',
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  
+  // Usar hook para manejar redirección después del login exitoso
+  useReturnTo();
 
-  // Redirección automática si ya está autenticado
+  // Solo redirigir si está autenticado Y no está cargando
   useEffect(() => {
-    if (isAuthenticated) {
-      console.log('[Login] User already authenticated, redirecting to /home');
-      navigate('/home');
+    if (isAuthenticated && !authLoading) {
+      console.log('[Login] User authenticated and not loading, useReturnTo will handle redirection');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, authLoading]);
 
-  // Navegación después de login exitoso
+  // Limpiar error al cambiar los datos del formulario
   useEffect(() => {
-    if (isAuthenticated) {
-      console.log('[Login] User authenticated after login, navigating to /home');
-      navigate('/home');
+    if (authError) {
+      clearError();
     }
-  }, [isAuthenticated, navigate]);
+  }, [formData, authError, clearError]);
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, username: e.target.value }));
@@ -42,49 +43,92 @@ const Login = () => {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError(null);
+    
+    // Validación básica del formulario
+    if (!formData.username.trim() || !formData.password.trim()) {
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
       console.log('[Login] Attempting login with:', formData.username);
       const result = await login(formData);
-      console.log('[Login] Login result:', result);
       
       if (result.success) {
-        console.log('[Login] Login successful - AuthContext will handle navigation');
-        // NO navegar aquí - dejar que useEffect maneje la redirección
-        // El AuthContext actualizará el estado y el useEffect se encargará de navegar
+        console.log('[Login] Login successful, AuthContext will handle navigation');
+        // La navegación se maneja en el useEffect
       } else {
         console.log('[Login] Login failed:', result.message);
-        setError(result.message || 'Error en el inicio de sesión');
+        // El error se maneja en el AuthContext
       }
-    } catch (error: any) {
-      console.error('[Login] Login error:', error);
-      setError('Error de conexión. Intente nuevamente.');
+    } catch (error) {
+      console.error('[Login] Unexpected error during login:', error);
+      // El error se maneja en el AuthContext
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const handleRegisterClick = () => {
-    navigate('/register');
+    // Usar returnTo para mantener la lógica consistente
+    window.location.href = '/register';
   };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
+  // Si está autenticado y no está cargando, mostrar loading
+  if (isAuthenticated && !authLoading) {
+    return (
+      <Container maxWidth="sm" sx={{ mt: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <CircularProgress size={40} />
+      </Container>
+    );
+  }
+
+  // Si está cargando la autenticación inicial
+  if (authLoading) {
+    return (
+      <Container maxWidth="sm" sx={{ mt: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <CircularProgress size={40} />
+      </Container>
+    );
+  }
+
   return (
     <Container maxWidth="sm" sx={{ mt: 4 }}>
+      {/* Theme Toggle */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <ThemeToggle />
+      </Box>
+      
       <Card sx={{ 
         boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
         borderRadius: 2,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        background: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(10px)',
       }}>
         <Box sx={{ p: 3 }}>
-          <Typography variant="h5" gutterBottom align="center" sx={{ mb: 3 }}>
+          <Typography variant="h5" gutterBottom align="center" sx={{ 
+            mb: 3,
+            color: '#3F51B5',
+            fontWeight: 600,
+          }}>
             Iniciar Sesión
           </Typography>
+          
+          {authError && (
+            <Alert 
+              severity="error" 
+              sx={{ mb: 2 }}
+              onClose={() => clearError()}
+            >
+              {authError}
+            </Alert>
+          )}
           
           <Box component="form" onSubmit={handleFormSubmit} noValidate>
             <TextField
@@ -93,7 +137,7 @@ const Login = () => {
               margin="normal"
               value={formData.username}
               onChange={handleUsernameChange}
-              disabled={isLoading}
+              disabled={isSubmitting}
               required
               autoComplete="username"
               autoFocus
@@ -114,7 +158,7 @@ const Login = () => {
               margin="normal"
               value={formData.password}
               onChange={handlePasswordChange}
-              disabled={isLoading}
+              disabled={isSubmitting}
               required
               autoComplete="current-password"
               InputProps={{
@@ -125,6 +169,7 @@ const Login = () => {
                       onClick={togglePasswordVisibility}
                       edge="end"
                       size="small"
+                      disabled={isSubmitting}
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
@@ -134,38 +179,46 @@ const Login = () => {
               sx={{ mb: 2 }}
             />
             
-            {error && (
-              <Alert 
-                severity="error" 
-                sx={{ mb: 2 }}
-                onClose={() => setError(null)}
-              >
-                {error}
-              </Alert>
-            )}
-            
             <Button
               type="submit"
               variant="contained"
-              color="primary"
               fullWidth
               size="large"
-              disabled={isLoading}
+              disabled={isSubmitting || !formData.username.trim() || !formData.password.trim()}
               sx={{ 
                 py: 1.5,
-                fontSize: '1.1rem'
+                fontSize: '1.1rem',
+                backgroundColor: '#3F51B5',
+                '&:hover': {
+                  backgroundColor: '#303F9F',
+                },
+                '&:disabled': {
+                  backgroundColor: '#9FA8DA',
+                },
               }}
             >
-              {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+              {isSubmitting ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CircularProgress size={20} color="inherit" />
+                  Iniciando sesión...
+                </Box>
+              ) : (
+                'Iniciar Sesión'
+              )}
             </Button>
             
             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
               <Button
                 variant="text"
-                color="secondary"
                 onClick={handleRegisterClick}
-                disabled={isLoading}
-                sx={{ textTransform: 'none' }}
+                disabled={isSubmitting}
+                sx={{ 
+                  textTransform: 'none',
+                  color: '#FF4081',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 64, 129, 0.04)',
+                  },
+                }}
               >
                 ¿No tienes una cuenta? Regístrate aquí
               </Button>
