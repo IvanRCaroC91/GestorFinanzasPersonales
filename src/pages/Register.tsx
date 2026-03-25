@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import authService from '../services/authService';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { Container, Card, TextField, Button, Typography, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Box, Alert } from '@mui/material';
 
 const Register = () => {
@@ -62,7 +63,7 @@ const Register = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:3001/api/v1/auth/register', { //POST que se envia a la conexion server.js--------------------
+      const response = await authService.register({
         username: nombreUsuario,
         email,
         password,
@@ -72,9 +73,9 @@ const Register = () => {
         segundo_nombre: segundoNombre || null,
         segundo_apellido: segundoApellido || null,
       });
-      setMensaje(response.data.message);
+      setMensaje(response.message);
       setIsError(false);
-      if (response.status === 201) {
+      if (response.success) {
         setOpenDialog(true);
       }
     } catch (error: unknown) {
@@ -93,19 +94,30 @@ const Register = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     if (!isError) {
-      navigate('/');
+      navigate('/login');
     }
   };
 
   return (
     <Container maxWidth="sm" sx={{ mt: 4 }}>
+      {/* Theme Toggle */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <ThemeToggle />
+      </Box>
+      
       <Card sx={{ 
         boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
         borderRadius: 2,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        background: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(10px)',
       }}>
         <Box sx={{ p: 3 }}>
-          <Typography variant="h5" gutterBottom align="center" sx={{ mb: 3 }}>
+          <Typography variant="h5" gutterBottom align="center" sx={{ 
+            mb: 3,
+            color: '#3F51B5',
+            fontWeight: 600,
+          }}>
             Registro de Usuario
           </Typography>
           
@@ -193,13 +205,19 @@ const Register = () => {
           <Box sx={{ mt: 3 }}>
             <Button
               variant="contained"
-              color="primary"
               fullWidth
               size="large"
               onClick={handleRegister}
               sx={{ 
                 py: 1.5,
-                fontSize: '1.1rem'
+                fontSize: '1.1rem',
+                backgroundColor: '#3F51B5',
+                '&:hover': {
+                  backgroundColor: '#303F9F',
+                },
+                '&:disabled': {
+                  backgroundColor: '#9FA8DA',
+                },
               }}
             >
               Registrarse
@@ -208,11 +226,16 @@ const Register = () => {
             <Box sx={{ mt: 2, textAlign: 'center' }}>
               <Button
                 variant="text"
-                color="secondary"
-                onClick={() => navigate('/')}
-                sx={{ textTransform: 'none' }}
+                onClick={() => navigate('/login')}
+                sx={{ 
+                  textTransform: 'none',
+                  color: '#FF4081',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 64, 129, 0.04)',
+                  },
+                }}
               >
-                Volver a Inicio de Sesión
+                ¿Ya tienes una cuenta? Inicia sesión aquí
               </Button>
             </Box>
           </Box>
