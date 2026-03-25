@@ -1,102 +1,191 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import authService from '../services/authService';
 
-// Props para el provider
+// Tipos mejorados
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  nombreCompleto?: string;
+  iniciales?: string;
+}
+
+interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+}
+
+interface AuthContextType extends AuthState {
+  login: (credentials: { username: string; password: string }) => Promise<{ success: boolean; message?: string }>;
+  logout: () => void;
+  clearError: () => void;
+  refreshToken: () => Promise<boolean>;
+}
+
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-interface AuthContextType {
-  user: any | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (credentials: { username: string; password: string }) => Promise<{ success: boolean; message?: string }>;
-  logout: () => void;
-}
+// Crear el contexto PRIMERO (antes de usarlo)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Provider del contexto de autenticación
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<any | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [state, setState] = useState<AuthState>({
+    user: null,
+    isAuthenticated: false,
+    isLoading: true,
+    error: null,
+  });
 
-  // Verificar si hay un token al cargar la aplicación
+  // Función para actualizar estado de forma inmutable
+  const updateState = useCallback((updates: Partial<AuthState>) => {
+    setState(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  // Verificar autenticación al montar el componente
   useEffect(() => {
-    const checkAuthStatus = () => {
+    const initializeAuth = async () => {
       try {
-        const isAuthenticated = authService.isAuthenticated();
-        if (isAuthenticated) {
+        console.log('[AuthContext] Initializing authentication...');
+        
+        if (authService.isAuthenticated()) {
           const userData = authService.getUser();
           if (userData) {
-            setUser(userData);
+            console.log('[AuthContext] User authenticated:', userData);
+            updateState({
+              user: userData,
+              isAuthenticated: true,
+              isLoading: false,
+              error: null,
+            });
           } else {
-            // Token existe pero no hay userData, limpiar todo
-            console.log('[AuthContext] Token exists but no userData, clearing session');
+            console.log('[AuthContext] Token exists but no valid user data');
             authService.logout();
+            updateState({
+              user: null,
+              isAuthenticated: false,
+              isLoading: false,
+              error: null,
+            });
           }
         } else {
-          // Token no válido o expirado, asegurar estado limpio
-          console.log('[AuthContext] Invalid or expired token, user not authenticated');
-          setUser(null);
+          console.log('[AuthContext] No valid authentication found');
+          updateState({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: null,
+          });
         }
       } catch (error) {
-        console.error('Error verificando estado de autenticación:', error);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
+        console.error('[AuthContext] Error initializing auth:', error);
+        updateState({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          error: 'Error al verificar autenticación',
+        });
       }
     };
 
-    checkAuthStatus();
-  }, []);
+    initializeAuth();
+  }, [updateState]);
 
   /**
    * Función para iniciar sesión
    * @param credentials - Credenciales del usuario
    * @returns Resultado del login
    */
-  const login = async (credentials: { username: string; password: string }): Promise<{ success: boolean; message?: string }> => {
+  const login = useCallback(async (credentials: { username: string; password: string }): Promise<{ success: boolean; message?: string }> => {
     try {
-      console.log('[AuthContext] Login attempt:', credentials.username);
-      const response = await authService.login(credentials);
-      console.log('[AuthContext] AuthService response:', response);
+      console.log('[AuthContext] Attempting login...');
+      updateState({ isLoading: true, error: null });
       
-      if (response.success) {
-        console.log('[AuthContext] Login successful, setting user:', response.user);
-        setUser(response.user);
+      const response = await authService.login(credentials);
+      console.log('[AuthContext] Login response:', response);
+      
+      if (response.success && response.user) {
+        console.log('[AuthContext] Login successful');
+        updateState({
+          user: response.user,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        });
         return { success: true };
       } else {
-        console.log('[AuthContext] Login failed:', response.message);
-        return { success: false, message: response.message || 'Error en el inicio de sesión' };
+        const errorMessage = response.message || 'Credenciales inválidas';
+        console.log('[AuthContext] Login failed:', errorMessage);
+        updateState({
+          isLoading: false,
+          error: errorMessage,
+        });
+        return { success: false, message: errorMessage };
       }
     } catch (error: any) {
       console.error('[AuthContext] Login error:', error);
-      const errorMessage = error.message || 'Credenciales inválidas';
+      const errorMessage = error.response?.data?.message || error.message || 'Error de conexión';
+      updateState({
+        isLoading: false,
+        error: errorMessage,
+      });
       return { success: false, message: errorMessage };
     }
-  };
+  }, [updateState]);
 
   /**
    * Función para cerrar sesión
    */
-  const logout = () => {
+  const logout = useCallback(() => {
+    console.log('[AuthContext] Logging out...');
     authService.logout();
-    setUser(null);
-  };
+    updateState({
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+      error: null,
+    });
+  }, [updateState]);
+
+  /**
+   * Limpiar errores
+   */
+  const clearError = useCallback(() => {
+    updateState({ error: null });
+  }, [updateState]);
+
+  /**
+   * Refrescar token (placeholder para refresh token futuro)
+   */
+  const refreshToken = useCallback(async (): Promise<boolean> => {
+    try {
+      // TODO: Implementar refresh token cuando el backend lo soporte
+      const isValid = authService.isAuthenticated();
+      if (!isValid) {
+        logout();
+      }
+      return isValid;
+    } catch (error) {
+      console.error('[AuthContext] Error refreshing token:', error);
+      logout();
+      return false;
+    }
+  }, [logout]);
 
   const value: AuthContextType = {
-    user,
-    isAuthenticated: !!user,
-    isLoading,
+    ...state,
     login,
     logout,
+    clearError,
+    refreshToken,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
-// Crear el contexto
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Hook para usar el contexto de autenticación
 export const useAuth = (): AuthContextType => {
