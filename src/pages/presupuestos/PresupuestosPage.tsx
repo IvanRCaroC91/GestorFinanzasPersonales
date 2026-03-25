@@ -16,18 +16,15 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   Snackbar,
   Alert,
   Chip,
   LinearProgress,
-  Grid,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  TrendingUp as TrendingUpIcon,
 } from '@mui/icons-material';
 import financeService from '../../services/financeService';
 import { Presupuesto, EjecucionPresupuesto } from '../../types/finance';

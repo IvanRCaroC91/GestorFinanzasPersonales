@@ -16,7 +16,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   Snackbar,
   Alert,
   TextField,
@@ -25,7 +24,6 @@ import {
   Select,
   MenuItem,
   Chip,
-  Grid,
   CircularProgress,
 } from '@mui/material';
 import {
@@ -39,6 +37,18 @@ import financeService from '../services/financeService';
 import { Movimiento, Categoria } from '../types/finance';
 import MovimientoForm from './movimientos/MovimientoForm';
 
+interface Filters {
+  search: string;
+  tipo: string;
+  categoriaId: string;
+}
+
+interface SnackbarState {
+  open: boolean;
+  message: string;
+  severity: 'success' | 'error';
+}
+
 const MovimientosPage: React.FC = () => {
   const [movimientos, setMovimientos] = useState<Movimiento[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -46,8 +56,12 @@ const MovimientosPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingMovimiento, setEditingMovimiento] = useState<Movimiento | null>(null);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
-  const [filters, setFilters] = useState({
+  const [snackbar, setSnackbar] = useState<SnackbarState>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
+  const [filters, setFilters] = useState<Filters>({
     search: '',
     tipo: '',
     categoriaId: '',
@@ -81,10 +95,10 @@ const MovimientosPage: React.FC = () => {
     }
   };
 
-  const handleFilterChange = (field: keyof typeof filters) => (event: React.ChangeEvent<HTMLInputElement | { value: string }>) => {
+  const handleFilterChange = (field: keyof Filters) => (event: any) => {
     setFilters(prev => ({
       ...prev,
-      [field]: event.target.value,
+      [field]: event.target?.value || event,
     }));
   };
 
@@ -156,7 +170,7 @@ const MovimientosPage: React.FC = () => {
   };
 
   const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
+    setSnackbar(prev => ({ ...prev, open: false }));
   };
 
   const formatCurrency = (amount: number) => {
@@ -200,63 +214,64 @@ const MovimientosPage: React.FC = () => {
           </Box>
 
           {/* Filtros */}
-          <Grid container spacing={2} mb={3}>
-            <Grid item xs={12} sm={6} md={3}>
-              <TextField
-                fullWidth
-                label="Buscar"
-                value={filters.search}
-                onChange={handleFilterChange('search')}
-                placeholder="Buscar por descripción..."
-              />
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>Tipo</InputLabel>
-                <Select
-                  value={filters.tipo}
-                  onChange={handleFilterChange('tipo')}
-                  label="Tipo"
-                >
-                  <MenuItem value="">Todos</MenuItem>
-                  <MenuItem value="INGRESO">Ingresos</MenuItem>
-                  <MenuItem value="GASTO">Gastos</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
+          <Box sx={{ mb: 3 }}>
+            <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+              <Box sx={{ flex: 1, minWidth: 200 }}>
+                <TextField
+                  fullWidth
+                  label="Buscar"
+                  value={filters.search}
+                  onChange={handleFilterChange('search')}
+                  placeholder="Buscar por descripción..."
+                />
+              </Box>
+              
+              <Box sx={{ flex: 1, minWidth: 150 }}>
+                <FormControl fullWidth>
+                  <InputLabel>Tipo</InputLabel>
+                  <Select
+                    value={filters.tipo}
+                    onChange={handleFilterChange('tipo')}
+                    label="Tipo"
+                  >
+                    <MenuItem value="">Todos</MenuItem>
+                    <MenuItem value="INGRESO">Ingresos</MenuItem>
+                    <MenuItem value="GASTO">Gastos</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
 
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>Categoría</InputLabel>
-                <Select
-                  value={filters.categoriaId}
-                  onChange={handleFilterChange('categoriaId')}
-                  label="Categoría"
-                >
-                  <MenuItem value="">Todas</MenuItem>
-                  {categorias
-                    .filter(cat => !filters.tipo || cat.tipo === filters.tipo)
-                    .map((categoria) => (
-                      <MenuItem key={categoria.id} value={categoria.id!}>
-                        {categoria.nombre}
-                      </MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
-            </Grid>
+              <Box sx={{ flex: 1, minWidth: 200 }}>
+                <FormControl fullWidth>
+                  <InputLabel>Categoría</InputLabel>
+                  <Select
+                    value={filters.categoriaId}
+                    onChange={handleFilterChange('categoriaId')}
+                    label="Categoría"
+                  >
+                    <MenuItem value="">Todas</MenuItem>
+                    {categorias
+                      .filter(cat => !filters.tipo || cat.tipo === filters.tipo)
+                      .map((categoria) => (
+                        <MenuItem key={categoria.id} value={categoria.id!}>
+                          {categoria.nombre}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+              </Box>
 
-            <Grid item xs={12} sm={6} md={3}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => setFilters({ search: '', tipo: '', categoriaId: '' })}
-                sx={{ height: '56px' }}
-              >
-                Limpiar Filtros
-              </Button>
-            </Grid>
-          </Grid>
+              <Box sx={{ flex: '0 0 auto' }}>
+                <Button
+                  variant="outlined"
+                  onClick={() => setFilters({ search: '', tipo: '', categoriaId: '' })}
+                  sx={{ height: '56px' }}
+                >
+                  Limpiar Filtros
+                </Button>
+              </Box>
+            </Box>
+          </Box>
 
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>

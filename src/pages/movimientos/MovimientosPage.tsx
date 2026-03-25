@@ -16,7 +16,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   Snackbar,
   Alert,
   Chip,
@@ -46,8 +45,9 @@ const MovimientosPage: React.FC = () => {
   const [editingMovimiento, setEditingMovimiento] = useState<Movimiento | null>(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
   const [filters, setFilters] = useState({
-    categoriaId: '',
+    search: '',
     tipo: '',
+    categoriaId: '',
     fechaInicio: '',
     fechaFin: '',
   });
@@ -56,37 +56,46 @@ const MovimientosPage: React.FC = () => {
     loadData();
   }, []);
 
-  useEffect(() => {
-    loadCategorias();
-  }, []);
-
   const loadData = async () => {
     try {
       setLoading(true);
-      const response = await financeService.getMovimientos();
-      if (response.success) {
-        setMovimientos(response.data);
-      } else {
-        setError(response.message);
+      const [movimientosResponse, categoriasResponse] = await Promise.all([
+        financeService.getMovimientos(),
+        financeService.getCategorias(),
+      ]);
+
+      if (movimientosResponse.success) {
+        setMovimientos(movimientosResponse.data);
       }
-    } catch (error: any) {
-      setError('Error al cargar movimientos');
-      console.error('Error loading movimientos:', error);
+
+      if (categoriasResponse.success) {
+        setCategorias(categoriasResponse.data);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al cargar los datos';
+      setError(errorMessage);
+      console.error('Error loading data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const loadCategorias = async () => {
-    try {
-      const response = await financeService.getCategorias();
-      if (response.success) {
-        setCategorias(response.data);
-      }
-    } catch (error: any) {
-      console.error('Error loading categorias:', error);
-    }
+  const handleFilterChange = (field: string) => (event: any) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: event.target?.value || event,
+    }));
   };
+
+  const filteredMovimientos = movimientos.filter(movimiento => {
+    const matchesSearch = movimiento.descripcion.toLowerCase().includes(filters.search.toLowerCase());
+    const matchesTipo = !filters.tipo || movimiento.tipo === filters.tipo;
+    const matchesCategoria = !filters.categoriaId || movimiento.categoriaId === filters.categoriaId;
+    const matchesFechaInicio = !filters.fechaInicio || movimiento.fecha >= filters.fechaInicio;
+    const matchesFechaFin = !filters.fechaFin || movimiento.fecha <= filters.fechaFin;
+    
+    return matchesSearch && matchesTipo && matchesCategoria && matchesFechaInicio && matchesFechaFin;
+  });
 
   const handleCreate = () => {
     setEditingMovimiento(null);
@@ -108,9 +117,9 @@ const MovimientosPage: React.FC = () => {
         } else {
           setSnackbar({ open: true, message: response.message, severity: 'error' });
         }
-      } catch (error: any) {
-        setSnackbar({ open: true, message: 'Error al eliminar movimiento', severity: 'error' });
-        console.error('Error deleting movimiento:', error);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Error al eliminar movimiento';
+        setSnackbar({ open: true, message: errorMessage, severity: 'error' });
       }
     }
   };
@@ -118,6 +127,7 @@ const MovimientosPage: React.FC = () => {
   const handleSave = async (movimientoData: Omit<Movimiento, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     try {
       let response;
+      
       if (editingMovimiento) {
         response = await financeService.updateMovimiento(editingMovimiento.id!, movimientoData);
       } else {
@@ -135,9 +145,9 @@ const MovimientosPage: React.FC = () => {
       } else {
         setSnackbar({ open: true, message: response.message, severity: 'error' });
       }
-    } catch (error: any) {
-      setSnackbar({ open: true, message: 'Error al guardar movimiento', severity: 'error' });
-      console.error('Error saving movimiento:', error);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar movimiento';
+      setSnackbar({ open: true, message: errorMessage, severity: 'error' });
     }
   };
 
@@ -150,14 +160,6 @@ const MovimientosPage: React.FC = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const filteredMovimientos = movimientos.filter(movimiento => {
-    if (filters.categoriaId && movimiento.categoriaId !== filters.categoriaId) return false;
-    if (filters.tipo && movimiento.tipo !== filters.tipo) return false;
-    if (filters.fechaInicio && movimiento.fecha < filters.fechaInicio) return false;
-    if (filters.fechaFin && movimiento.fecha > filters.fechaFin) return false;
-    return true;
-  });
-
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -167,6 +169,11 @@ const MovimientosPage: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-CO');
+  };
+
+  const getCategoriaNombre = (categoriaId: string) => {
+    const categoria = categorias.find(cat => cat.id === categoriaId);
+    return categoria?.nombre || 'Sin categoría';
   };
 
   if (loading) {
@@ -192,62 +199,86 @@ const MovimientosPage: React.FC = () => {
             </Button>
           </Box>
 
-          <Grid container spacing={2} mb={3}>
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>Categoría</InputLabel>
-                <Select
-                  value={filters.categoriaId}
-                  onChange={(e) => setFilters(prev => ({ ...prev, categoriaId: e.target.value }))}
-                  label="Categoría"
-                >
-                  <MenuItem value="">Todas</MenuItem>
-                  {categorias.map((cat) => (
-                    <MenuItem key={cat.id} value={cat.id}>
-                      {cat.nombre}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>Tipo</InputLabel>
-                <Select
-                  value={filters.tipo}
-                  onChange={(e) => setFilters(prev => ({ ...prev, tipo: e.target.value }))}
-                  label="Tipo"
-                >
-                  <MenuItem value="">Todos</MenuItem>
-                  <MenuItem value="INGRESO">Ingresos</MenuItem>
-                  <MenuItem value="GASTO">Gastos</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
+          {/* Filtros */}
+          <Box sx={{ mb: 3 }}>
+            <Grid container spacing={2} mb={3}>
+              <Grid item xs={12} sm={6} md={3}>
+                <TextField
+                  fullWidth
+                  label="Buscar"
+                  value={filters.search}
+                  onChange={handleFilterChange('search')}
+                  placeholder="Buscar por descripción..."
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <FormControl fullWidth>
+                  <InputLabel>Tipo</InputLabel>
+                  <Select
+                    value={filters.tipo}
+                    onChange={handleFilterChange('tipo')}
+                    label="Tipo"
+                  >
+                    <MenuItem value="">Todos</MenuItem>
+                    <MenuItem value="INGRESO">Ingresos</MenuItem>
+                    <MenuItem value="GASTO">Gastos</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
-              <TextField
-                fullWidth
-                type="date"
-                label="Fecha Inicio"
-                value={filters.fechaInicio}
-                onChange={(e) => setFilters(prev => ({ ...prev, fechaInicio: e.target.value }))}
-                InputLabelProps={{ shrink: true }}
-              />
-            </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <FormControl fullWidth>
+                  <InputLabel>Categoría</InputLabel>
+                  <Select
+                    value={filters.categoriaId}
+                    onChange={handleFilterChange('categoriaId')}
+                    label="Categoría"
+                  >
+                    <MenuItem value="">Todas</MenuItem>
+                    {categorias.map((cat) => (
+                      <MenuItem key={cat.id} value={cat.id}>
+                        {cat.nombre}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
-              <TextField
-                fullWidth
-                type="date"
-                label="Fecha Fin"
-                value={filters.fechaFin}
-                onChange={(e) => setFilters(prev => ({ ...prev, fechaFin: e.target.value }))}
-                InputLabelProps={{ shrink: true }}
-              />
+              <Grid item xs={12} sm={6} md={3}>
+                <TextField
+                  fullWidth
+                  type="date"
+                  label="Fecha Inicio"
+                  value={filters.fechaInicio}
+                  onChange={handleFilterChange('fechaInicio')}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6} md={3}>
+                <TextField
+                  fullWidth
+                  type="date"
+                  label="Fecha Fin"
+                  value={filters.fechaFin}
+                  onChange={handleFilterChange('fechaFin')}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6} md={3}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<FilterIcon />}
+                  onClick={() => setFilters({ search: '', tipo: '', categoriaId: '', fechaInicio: '', fechaFin: '' })}
+                >
+                  Limpiar Filtros
+                </Button>
+              </Grid>
             </Grid>
-          </Grid>
+          </Box>
 
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -255,6 +286,7 @@ const MovimientosPage: React.FC = () => {
             </Alert>
           )}
 
+          {/* Tabla */}
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
@@ -262,8 +294,8 @@ const MovimientosPage: React.FC = () => {
                   <TableCell>Fecha</TableCell>
                   <TableCell>Descripción</TableCell>
                   <TableCell>Categoría</TableCell>
-                  <TableCell>Tipo</TableCell>
                   <TableCell align="right">Monto</TableCell>
+                  <TableCell>Tipo</TableCell>
                   <TableCell align="center">Acciones</TableCell>
                 </TableRow>
               </TableHead>
@@ -272,27 +304,37 @@ const MovimientosPage: React.FC = () => {
                   <TableRow key={movimiento.id}>
                     <TableCell>{formatDate(movimiento.fecha)}</TableCell>
                     <TableCell>{movimiento.descripcion}</TableCell>
-                    <TableCell>{movimiento.categoria?.nombre || '-'}</TableCell>
+                    <TableCell>{getCategoriaNombre(movimiento.categoriaId)}</TableCell>
+                    <TableCell align="right">
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                        {movimiento.tipo === 'INGRESO' ? (
+                          <Typography color="primary.main" sx={{ fontSize: 16, mr: 1 }}>↑</Typography>
+                        ) : (
+                          <Typography color="secondary.main" sx={{ fontSize: 16, mr: 1 }}>↓</Typography>
+                        )}
+                        <Typography
+                          sx={{
+                            color: movimiento.tipo === 'INGRESO' ? 'primary.main' : 'secondary.main',
+                            fontWeight: 600,
+                          }}
+                        >
+                          {formatCurrency(movimiento.monto)}
+                        </Typography>
+                      </Box>
+                    </TableCell>
                     <TableCell>
-                      <Chip 
-                        label={movimiento.tipo} 
+                      <Chip
+                        label={movimiento.tipo}
                         color={movimiento.tipo === 'INGRESO' ? 'success' : 'warning'}
                         size="small"
                       />
-                    </TableCell>
-                    <TableCell align="right">
-                      <Typography 
-                        color={movimiento.tipo === 'INGRESO' ? 'success.main' : 'error.main'}
-                        fontWeight="bold"
-                      >
-                        {formatCurrency(movimiento.monto)}
-                      </Typography>
                     </TableCell>
                     <TableCell align="center">
                       <IconButton
                         color="primary"
                         onClick={() => handleEdit(movimiento)}
                         size="small"
+                        sx={{ mr: 1 }}
                       >
                         <EditIcon />
                       </IconButton>
@@ -310,7 +352,10 @@ const MovimientosPage: React.FC = () => {
                   <TableRow>
                     <TableCell colSpan={6} align="center">
                       <Typography variant="body2" color="textSecondary">
-                        No hay movimientos registrados
+                        {movimientos.length === 0 
+                          ? 'No hay movimientos registrados' 
+                          : 'No hay movimientos que coincidan con los filtros'
+                        }
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -321,6 +366,7 @@ const MovimientosPage: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Dialog Form */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
         <DialogTitle>
           {editingMovimiento ? 'Editar Movimiento' : 'Nuevo Movimiento'}
@@ -335,6 +381,7 @@ const MovimientosPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Snackbar */}
       <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
         <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
           {snackbar.message}

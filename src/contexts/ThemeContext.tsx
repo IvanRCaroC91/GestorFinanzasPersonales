@@ -1,129 +1,92 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { Theme, ThemeMode, themes, defaultTheme } from '../theme/theme';
+import { Theme, ThemeMode, themes } from '../theme/theme';
 
 interface ThemeContextType {
-  theme: Theme;
-  themeMode: ThemeMode;
-  toggleTheme: () => void;
-  setThemeMode: (mode: ThemeMode) => void;
-  isDark: boolean;
+    theme: Theme;
+    themeMode: ThemeMode;
+    toggleTheme: () => void;
+    setThemeMode: (mode: ThemeMode) => void;
+    isDark: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-interface ThemeProviderProps {
-  children: ReactNode;
-  defaultMode?: ThemeMode;
-}
+interface ThemeProviderProps { children: ReactNode; defaultMode?: ThemeMode; }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ 
-  children, 
-  defaultMode = 'light' 
-}) => {
-  const [themeMode, setThemeModeState] = useState<ThemeMode>(() => {
-    // Check localStorage first
-    const saved = localStorage.getItem('theme-mode') as ThemeMode;
-    if (saved && (saved === 'light' || saved === 'dark')) {
-      return saved;
-    }
-    
-    // Check system preference
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
-    
-    return defaultMode;
-  });
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, defaultMode = 'light' }) => {
+    const [themeMode, setThemeModeState] = useState<ThemeMode>(() => {
+        const saved = localStorage.getItem('theme-mode') as ThemeMode;
+        if (saved && (saved === 'light' || saved === 'dark')) return saved;
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
+        return defaultMode;
+    });
 
-  const [theme, setTheme] = useState<Theme>(themes[themeMode]);
+    const [userPrefers, setUserPrefers] = useState<boolean>(!!localStorage.getItem('theme-mode'));
+    const [theme, setTheme] = useState<Theme>(themes[themeMode]);
+    const isDark = themeMode === 'dark';
 
-  const isDark = themeMode === 'dark';
-
-  const toggleTheme = () => {
-    const newMode = themeMode === 'light' ? 'dark' : 'light';
-    setThemeMode(newMode);
-  };
-
-  const setThemeMode = (mode: ThemeMode) => {
-    setThemeModeState(mode);
-  };
-
-  useEffect(() => {
-    setTheme(themes[themeMode]);
-    localStorage.setItem('theme-mode', themeMode);
-    
-    // Update document class for Tailwind dark mode
-    if (themeMode === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [themeMode]);
-
-  // Listen for system theme changes
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      // Only auto-change if user hasn't explicitly set a preference
-      if (!localStorage.getItem('theme-mode')) {
-        setThemeMode(e.matches ? 'dark' : 'light');
-      }
+    const toggleTheme = () => {
+        const newMode: ThemeMode = themeMode === 'light' ? 'dark' : 'light';
+        setThemeMode(newMode);
     };
 
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
+    const setThemeMode = (mode: ThemeMode) => {
+        setThemeModeState(mode);
+        setUserPrefers(true);
+        localStorage.setItem('theme-mode', mode);
+    };
 
-  const value: ThemeContextType = {
-    theme,
-    themeMode,
-    toggleTheme,
-    setThemeMode,
-    isDark,
-  };
+    useEffect(() => {
+        setTheme(themes[themeMode]);
+        if (themeMode === 'dark') document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+    }, [themeMode]);
 
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
-  );
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleChange = (e: MediaQueryListEvent) => {
+            if (!userPrefers) setThemeModeState(e.matches ? 'dark' : 'light');
+        };
+        mediaQuery.addEventListener('change', handleChange);
+        return () => mediaQuery.removeEventListener('change', handleChange);
+    }, [userPrefers]);
+
+    return (
+        <ThemeContext.Provider value={{ theme, themeMode, toggleTheme, setThemeMode, isDark }}>
+            {children}
+        </ThemeContext.Provider>
+    );
 };
 
 export const useTheme = (): ThemeContextType => {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
+    const context = useContext(ThemeContext);
+    if (!context) throw new Error('useTheme must be used within ThemeProvider');
+    return context;
 };
 
-// Hook for accessing theme colors with semantic meaning
+// Hook para colores semánticos
 export const useFinancialColors = () => {
-  const { theme } = useTheme();
-  
-  return {
-    // Brand colors
-    brand: theme.colors.brand.primary,
-    brandSecondary: theme.colors.brand.secondary,
-    
-    // Financial semantic colors
-    income: theme.colors.semantic.success,
-    expense: theme.colors.semantic.danger,
-    warning: theme.colors.semantic.warning,
-    info: theme.colors.semantic.info,
-    
-    // Surface colors
-    background: theme.colors.surface.background,
-    card: theme.colors.surface.card,
-    
-    // Text colors
-    textPrimary: theme.colors.text.primary,
-    textSecondary: theme.colors.text.secondary,
-    
-    // Chart colors
-    chartIncome: theme.colors.charts.income,
-    chartExpense: theme.colors.charts.expense,
-    chartSavings: theme.colors.charts.savings,
-    chartInvestment: theme.colors.charts.investment,
-  };
+    const { theme } = useTheme();
+    return {
+        brand: theme.colors.brand.primary,
+        brandSecondary: theme.colors.brand.secondary,
+        income: theme.colors.semantic.success,
+        expense: theme.colors.semantic.danger,
+        warning: theme.colors.semantic.warning,
+        info: theme.colors.semantic.info,
+        background: theme.colors.surface.background,
+        card: theme.colors.surface.card,
+        overlay: theme.colors.surface.overlay,
+        textPrimary: theme.colors.text.primary,
+        textSecondary: theme.colors.text.secondary,
+        inverseText: theme.colors.text.inverse,
+        inverseSecondaryText: theme.colors.text.inverseSecondary,
+        chartIncome: theme.colors.charts.income,
+        chartExpense: theme.colors.charts.expense,
+        chartSavings: theme.colors.charts.savings,
+        chartInvestment: theme.colors.charts.investment,
+        statusOnline: theme.colors.status.online,
+        statusOffline: theme.colors.status.offline,
+        statusPending: theme.colors.status.pending,
+    };
 };
