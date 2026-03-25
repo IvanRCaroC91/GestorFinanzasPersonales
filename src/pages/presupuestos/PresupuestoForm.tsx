@@ -109,7 +109,7 @@ const PresupuestoForm: React.FC<PresupuestoFormProps> = ({ presupuesto, onSave, 
     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <FormControl fullWidth required>
-          <InputLabel>Categoría</InputLabel>
+          <InputLabel shrink>Categoría</InputLabel>
           <Select
             value={formData.categoriaId}
             onChange={handleChange('categoriaId')}
@@ -125,7 +125,7 @@ const PresupuestoForm: React.FC<PresupuestoFormProps> = ({ presupuesto, onSave, 
 
         <Box sx={{ display: 'flex', gap: 2 }}>
           <FormControl fullWidth required>
-            <InputLabel>Monto Límite</InputLabel>
+            <InputLabel shrink>Monto Límite</InputLabel>
             <TextField
               fullWidth
               label="Monto Límite"
@@ -141,7 +141,7 @@ const PresupuestoForm: React.FC<PresupuestoFormProps> = ({ presupuesto, onSave, 
           </FormControl>
 
           <FormControl fullWidth required>
-            <InputLabel>Mes</InputLabel>
+            <InputLabel shrink>Mes</InputLabel>
             <Select
               value={formData.mes}
               onChange={handleChange('mes')}
@@ -156,7 +156,7 @@ const PresupuestoForm: React.FC<PresupuestoFormProps> = ({ presupuesto, onSave, 
           </FormControl>
 
           <FormControl fullWidth required>
-            <InputLabel>Año</InputLabel>
+            <InputLabel shrink>Año</InputLabel>
             <TextField
               fullWidth
               label="Año"

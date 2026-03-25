@@ -32,12 +32,12 @@ import {
   Delete as DeleteIcon,
 } from '@mui/icons-material';
 import financeService from '../services/financeService';
-import { Presupuesto, EjecucionPresupuesto } from '../types/finance';
+import { Presupuesto, Categoria } from '../types/finance';
 import PresupuestoForm from './presupuestos/PresupuestoForm';
 
 const PresupuestosPage: React.FC = () => {
   const [presupuestos, setPresupuestos] = useState<Presupuesto[]>([]);
-  const [ejecuciones, setEjecuciones] = useState<EjecucionPresupuesto[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
@@ -62,18 +62,27 @@ const PresupuestosPage: React.FC = () => {
   ];
 
   useEffect(() => {
+    loadCategorias();
     loadPresupuestos();
   }, [selectedYear, selectedMonth]);
+
+  const loadCategorias = async () => {
+    try {
+      const response = await financeService.getCategorias();
+      if (response.success) {
+        setCategorias(response.data);
+      }
+    } catch (error) {
+      console.error('Error loading categorias:', error);
+    }
+  };
 
   const loadPresupuestos = async () => {
     try {
       setLoading(true);
       const response = await financeService.getPresupuestos(selectedYear, selectedMonth);
-      console.log('[PresupuestosPage] Raw response:', response);
-      console.log('[PresupuestosPage] Presupuestos data:', response.data);
       if (response.success) {
         setPresupuestos(response.data);
-        await loadEjecuciones();
       } else {
         setError(response.message);
       }
@@ -86,22 +95,12 @@ const PresupuestosPage: React.FC = () => {
   };
 
   const loadEjecuciones = async () => {
-    try {
-      const response = await financeService.getEjecucionPresupuesto(selectedYear, selectedMonth);
-      console.log('[PresupuestosPage] Ejecuciones response:', response);
-      if (response.success) {
-        setEjecuciones(response.data);
-      }
-    } catch (error: any) {
-      console.error('Error loading ejecuciones:', error);
-    }
+    // Eliminado - no se necesitan ejecuciones en este formulario
   };
 
   const handleCreate = () => {
-    console.log('[PresupuestosPage] handleCreate called');
     setEditingPresupuesto(null);
     setOpenDialog(true);
-    console.log('[PresupuestosPage] Dialog should open now');
   };
 
   const handleEdit = (presupuesto: Presupuesto) => {
@@ -172,6 +171,11 @@ const PresupuestosPage: React.FC = () => {
     return months.find(m => m.value === month)?.label || '';
   };
 
+  const getCategoriaName = (categoriaId: string) => {
+    const categoria = categorias.find(c => c.id === categoriaId);
+    return categoria?.nombre || 'Sin categoría';
+  };
+
   const getProgressColor = (percentage: number) => {
     if (percentage >= 90) return 'error';
     if (percentage >= 75) return 'warning';
@@ -195,10 +199,7 @@ const PresupuestosPage: React.FC = () => {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => {
-                console.log('[PresupuestosPage] Button clicked');
-                handleCreate();
-              }}
+              onClick={handleCreate}
             >
               Nuevo Presupuesto
             </Button>
@@ -239,13 +240,6 @@ const PresupuestosPage: React.FC = () => {
             </Typography>
           </Box>
 
-          {/* Debug info */}
-          <Box sx={{ mb: 2, p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
-            <Typography variant="body2">
-              Debug: presupuestos.length = {presupuestos.length}, loading = {loading.toString()}, error = {error || 'null'}
-            </Typography>
-          </Box>
-
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
@@ -257,59 +251,31 @@ const PresupuestosPage: React.FC = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>Categoría</TableCell>
-                  <TableCell>Período</TableCell>
-                  <TableCell align="right">Monto Máximo</TableCell>
-                  <TableCell align="right">Ejecutado</TableCell>
-                  <TableCell align="center">Ejecución</TableCell>
+                  <TableCell>Mes</TableCell>
+                  <TableCell>Año</TableCell>
+                  <TableCell align="right">Monto Límite</TableCell>
                   <TableCell align="center">Acciones</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {console.log('[PresupuestosPage] About to render, presupuestos:', presupuestos)}
                 {presupuestos.map((presupuesto) => {
-                  const ejecucion = ejecuciones.find(e => e.presupuestoId === presupuesto.id);
-                  const porcentajeUtilizado = ejecucion ? (ejecucion.porcentajeUtilizado || 0) : 0;
-                  
-                  console.log('[PresupuestosPage] Rendering presupuesto:', presupuesto, 'ejecucion:', ejecucion);
-                  
                   return (
                     <TableRow key={presupuesto.id}>
-                      <TableCell>{presupuesto.categoria?.nombre || '-'}</TableCell>
+                      <TableCell>{getCategoriaName(presupuesto.categoriaId)}</TableCell>
                       <TableCell>
                         <Typography variant="body2">
-                          {getMonthName(presupuesto.mes)} {presupuesto.anio}
+                          {getMonthName(presupuesto.mes)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">
+                          {presupuesto.anio}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
                         <Typography fontWeight="bold">
                           {formatCurrency(presupuesto.montoLimite || 0)}
                         </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography color={(porcentajeUtilizado || 0) > 100 ? 'error.main' : 'text.primary'}>
-                          {ejecucion ? formatCurrency(ejecucion.montoEjecutado) : '$0'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <LinearProgress
-                            variant="determinate"
-                            value={Math.min(porcentajeUtilizado || 0, 100)}
-                            sx={{ 
-                              flex: 1,
-                              height: 8,
-                              borderRadius: 4,
-                              backgroundColor: 'grey.200',
-                              '& .MuiLinearProgress-bar': {
-                                backgroundColor: (porcentajeUtilizado || 0) >= 90 ? '#f44336' : 
-                                               (porcentajeUtilizado || 0) >= 75 ? '#ff9800' : '#4caf50'
-                              }
-                            }}
-                          />
-                          <Typography variant="body2" sx={{ minWidth: 45 }}>
-                            {(porcentajeUtilizado || 0).toFixed(1)}%
-                          </Typography>
-                        </Box>
                       </TableCell>
                       <TableCell align="center">
                         <IconButton
@@ -332,7 +298,7 @@ const PresupuestosPage: React.FC = () => {
                 })}
                 {presupuestos.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} align="center">
+                    <TableCell colSpan={5} align="center">
                       <Typography variant="body2" color="textSecondary">
                         No hay presupuestos registrados
                       </Typography>
