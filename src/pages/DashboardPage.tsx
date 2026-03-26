@@ -155,28 +155,20 @@ const DashboardPage: React.FC = () => {
         </Typography>
       </Box>
 
-      {/* LAYOUT PRINCIPAL - GRID DE 2 COLUMNAS */}
+      {/* CARDS DE RESUMEN - GRID SUPERIOR */}
       <Box sx={{ 
         display: 'grid',
-        gridTemplateColumns: '2fr 1fr',
-        gap: 2,
-        width: '100%',
+        gridTemplateColumns: {
+          xs: '1fr',
+          sm: 'repeat(2, 1fr)',
+          md: 'repeat(3, 1fr)',
+          lg: 'repeat(4, 1fr)',
+          xl: 'repeat(5, 1fr)'
+        },
+        gap: 1.5,
         p: 2,
-        height: '100%'
+        width: '100%'
       }}>
-        {/* COLUMNA IZQUIERDA - RESUMEN Y PRESUPUESTO */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {/* CARDS DE RESUMEN */}
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: '1fr',
-                sm: 'repeat(2, 1fr)',
-              },
-              gap: 1
-            }}
-          >
         <Card
             sx={{
               width: '100%',
@@ -312,8 +304,18 @@ const DashboardPage: React.FC = () => {
               </Typography>
             </Box>
           </Card>
-          </Box>
+      </Box>
 
+      {/* LAYOUT PRINCIPAL - GRID DE 2 COLUMNAS */}
+      <Box sx={{ 
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 2,
+        width: '100%',
+        p: 2
+      }}>
+        {/* COLUMNA IZQUIERDA - PRESUPUESTO */}
+        <Box>
           {/* PRESUPUESTO VS EJECUTADO */}
           <Card>
             <CardContent sx={{ p: 2 }}>
@@ -482,8 +484,7 @@ const DashboardPage: React.FC = () => {
             )}
           </CardContent>
         </Card>
-
-        </Box>
+      </Box>
       </Box>
     </Box>
   );
