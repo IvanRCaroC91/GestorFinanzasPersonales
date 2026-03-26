@@ -1,8 +1,9 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  max-width: none;   /* 🔥 quita el límite */
+  margin: 0;         /* 🔥 elimina centrado */
+  padding: 0;        /* opcional, evita espacio interno */
+  width: 100%;
+  text-align: left;    /* cambiar de center a left para mejor layout */
 }
 
 .logo {
