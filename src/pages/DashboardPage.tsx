@@ -357,12 +357,52 @@ const DashboardPage: React.FC = () => {
           </Card>
         </Box>
 
-        {/* COLUMNA DERECHA - MOVIMIENTOS Y CATEGORÍAS */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {/* COLUMNA DERECHA - CATEGORÍAS Y MOVIMIENTOS */}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, maxWidth: '400px' }}>
+
+        {/* CATEGORÍAS RECIENTES */}
+        <Card>
+          <CardContent sx={{ p: 1.5 }}>
+            <Typography variant="h6" fontWeight="bold" mb={1}>
+              Categorías Recientes
+            </Typography>
+            {categoriasRecientes.length > 0 ? (
+              <Box>
+                {categoriasRecientes.map((categoria) => (
+                  <Box key={categoria.id} sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
+                    <Chip
+                      label={tipoCategoriaLabel[categoria.tipo as keyof typeof tipoCategoriaLabel]}
+                      color={categoria.tipo === 'INGRESO' ? 'success' : 'warning'}
+                      size="small"
+                      sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
+                    />
+                    <Typography variant="body2" sx={{ fontWeight: 500, fontSize: { xs: '0.8rem', sm: '0.875rem' }, flex: 1 }}>
+                      {categoria.nombre}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                  No hay categorías registradas
+                </Typography>
+                <Button 
+                  variant="contained" 
+                  sx={{ mt: 2 }}
+                  onClick={() => navigate('/categorias/new')}
+                  size="small"
+                >
+                  Crear Primera Categoría
+                </Button>
+              </Box>
+            )}
+          </CardContent>
+        </Card>
 
         {/* MOVIMIENTOS RECIENTES */}
         <Card>
-          <CardContent sx={{ p: 1 }}>
+          <CardContent sx={{ p: 1.5 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
               <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
                 Movimientos Recientes
@@ -385,7 +425,6 @@ const DashboardPage: React.FC = () => {
                       <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Descripción</TableCell>
                       <TableCell align="right" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Monto</TableCell>
                       <TableCell align="center" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, display: { xs: 'none', sm: 'table-cell' } }}>Tipo</TableCell>
-                      <TableCell align="center" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, display: { xs: 'none', md: 'table-cell' } }}>Acciones</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -421,15 +460,6 @@ const DashboardPage: React.FC = () => {
                             sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                           />
                         </TableCell>
-                        <TableCell align="center" sx={{ display: { xs: 'none', md: 'table-cell' } }}>
-                          <IconButton
-                            color="primary"
-                            onClick={() => navigate(`/movimientos/edit/${movimiento.id}`)}
-                            size="small"
-                          >
-                            <EditIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
-                          </IconButton>
-                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -453,54 +483,6 @@ const DashboardPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* CATEGORÍAS RECIENTES */}
-        <Card>
-          <CardContent sx={{ p: 1 }}>
-            <Typography variant="h6" fontWeight="bold" mb={1}>
-              Categorías Recientes
-            </Typography>
-            {categoriasRecientes.length > 0 ? (
-              <Box>
-                {categoriasRecientes.map((categoria) => (
-                  <Box key={categoria.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 500, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
-                        {categoria.nombre}
-                      </Typography>
-                      <Chip
-                        label={tipoCategoriaLabel[categoria.tipo as keyof typeof tipoCategoriaLabel]}
-                        color={categoria.tipo === 'INGRESO' ? 'success' : 'warning'}
-                        size="small"
-                        sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, mt: 0.5 }}
-                      />
-                    </Box>
-                    <IconButton
-                      color="primary"
-                      onClick={() => navigate(`/categorias/edit/${categoria.id}`)}
-                      size="small"
-                    >
-                      <EditIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
-                    </IconButton>
-                  </Box>
-                ))}
-              </Box>
-            ) : (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  No hay categorías registradas
-                </Typography>
-                <Button 
-                  variant="contained" 
-                  sx={{ mt: 2 }}
-                  onClick={() => navigate('/categorias/new')}
-                  size="small"
-                >
-                  Crear Primera Categoría
-                </Button>
-              </Box>
-            )}
-          </CardContent>
-        </Card>
         </Box>
       </Box>
     </Box>
