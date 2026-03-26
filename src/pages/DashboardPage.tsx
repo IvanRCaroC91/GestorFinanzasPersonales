@@ -4,8 +4,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Grid,
-  Paper,
   Table,
   TableBody,
   TableCell,
@@ -15,7 +13,6 @@ import {
   Chip,
   Button,
   CircularProgress,
-  LinearProgress,
   IconButton,
 } from '@mui/material';
 import {
@@ -23,9 +20,6 @@ import {
   TrendingDown as TrendingDownIcon,
   AccountBalance as BalanceIcon,
   Category as CategoryIcon,
-  SwapHoriz as MovementIcon,
-  AccountBalanceWallet as BudgetIcon,
-  Add as AddIcon,
   Edit as EditIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -57,7 +51,9 @@ const DashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadDashboardData();
+    (async () => {
+      await loadDashboardData();
+    })();
   }, []);
 
   const loadDashboardData = async () => {
@@ -135,9 +131,14 @@ const DashboardPage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ flexGrow: 1, p: { xs: 2, sm: 3 } }}>
+    <Box sx={{ 
+      width: '100%',
+      height: '100%',
+      p: 0,
+      m: 0
+    }}>
       {/* Header */}
-      <Box sx={{ mb: { xs: 3, sm: 4 } }}>
+      <Box sx={{ p: 2, mb: 2 }}>
         <Typography 
           variant="h4" 
           sx={{ 
@@ -154,294 +155,354 @@ const DashboardPage: React.FC = () => {
         </Typography>
       </Box>
 
-      {/* Resumen General */}
-      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} lg={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
-                <TrendingUpIcon sx={{ color: 'primary.main', fontSize: { xs: 28, sm: 32 } }} />
-                <Box sx={{ flex: 1, minWidth: 0, overflow: 'visible' }}>
-                  <Typography 
-                    variant="h4" 
-                    sx={{ 
-                      color: 'primary.main', 
-                      fontWeight: 'bold',
-                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem', lg: '1.75rem' },
-                      whiteSpace: 'nowrap',
-                      overflow: 'visible',
-                      lineHeight: 1.2
-                    }}
-                  >
-                    {formatCurrency(resumen.totalIngresos)}
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: 'text.secondary',
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                    }}
-                  >
-                    Total Ingresos
-                  </Typography>
-                </Box>
-              </Box>
-            </CardContent>
+      {/* LAYOUT PRINCIPAL - GRID DE 2 COLUMNAS */}
+      <Box sx={{ 
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 2,
+        width: '100%',
+        p: 2,
+        height: '100%'
+      }}>
+        {/* COLUMNA IZQUIERDA - RESUMEN Y PRESUPUESTO */}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {/* CARDS DE RESUMEN */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+              },
+              gap: 1
+            }}
+          >
+        <Card
+            sx={{
+              width: '100%',
+              height: '100%',
+              p: 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
+            }}
+          >
+            <TrendingUpIcon sx={{ color: 'primary.main', fontSize: { xs: 28, sm: 32 } }} />
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography 
+                sx={{ 
+                  color: 'primary.main', 
+                  fontWeight: 'bold',
+                  fontSize: { xs: '1rem', sm: '1.3rem', md: '1.6rem', lg: '2rem', xl: '2.5rem' },
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {formatCurrency(resumen.totalIngresos)}
+              </Typography>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  color: 'text.secondary',
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                }}
+              >
+                Total Ingresos
+              </Typography>
+            </Box>
           </Card>
-        </Grid>
 
-        <Grid item xs={12} sm={6} lg={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
-                <TrendingDownIcon sx={{ color: 'secondary.main', fontSize: { xs: 28, sm: 32 } }} />
-                <Box sx={{ flex: 1, minWidth: 0, overflow: 'visible' }}>
-                  <Typography 
-                    variant="h4" 
-                    sx={{ 
-                      color: 'secondary.main', 
-                      fontWeight: 'bold',
-                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem', lg: '1.75rem' },
-                      whiteSpace: 'nowrap',
-                      overflow: 'visible',
-                      lineHeight: 1.2
-                    }}
-                  >
-                    {formatCurrency(resumen.totalGastos)}
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: 'text.secondary',
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                    }}
-                  >
-                    Total Gastos
-                  </Typography>
-                </Box>
-              </Box>
-            </CardContent>
+          <Card
+            sx={{
+              width: '100%',
+              height: '100%',
+              p: 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
+            }}
+          >
+            <TrendingDownIcon sx={{ color: 'secondary.main', fontSize: { xs: 28, sm: 32 } }} />
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography 
+                sx={{ 
+                  color: 'secondary.main', 
+                  fontWeight: 'bold',
+                  fontSize: { xs: '1rem', sm: '1.3rem', md: '1.6rem', lg: '2rem', xl: '2.5rem' },
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {formatCurrency(resumen.totalGastos)}
+              </Typography>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  color: 'text.secondary',
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                }}
+              >
+                Total Gastos
+              </Typography>
+            </Box>
           </Card>
-        </Grid>
 
-        <Grid item xs={12} sm={6} lg={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
-                <BalanceIcon sx={{ color: resumen.balance >= 0 ? 'primary.main' : 'secondary.main', fontSize: { xs: 28, sm: 32 } }} />
-                <Box sx={{ flex: 1, minWidth: 0, overflow: 'visible' }}>
-                  <Typography 
-                    variant="h4" 
-                    sx={{ 
-                      color: resumen.balance >= 0 ? 'primary.main' : 'secondary.main', 
-                      fontWeight: 'bold',
-                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem', lg: '1.75rem' },
-                      whiteSpace: 'nowrap',
-                      overflow: 'visible',
-                      lineHeight: 1.2
-                    }}
-                  >
-                    {formatCurrency(resumen.balance)}
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: 'text.secondary',
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                    }}
-                  >
-                    Balance
-                  </Typography>
-                </Box>
-              </Box>
-            </CardContent>
+          <Card
+            sx={{
+              width: '100%',
+              height: '100%',
+              p: 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
+            }}
+          >
+            <BalanceIcon sx={{ color: resumen.balance >= 0 ? 'primary.main' : 'secondary.main', fontSize: { xs: 28, sm: 32 } }} />
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography 
+                sx={{ 
+                  color: resumen.balance >= 0 ? 'primary.main' : 'secondary.main', 
+                  fontWeight: 'bold',
+                  fontSize: { xs: '1rem', sm: '1.3rem', md: '1.6rem', lg: '2rem', xl: '2.5rem' },
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {formatCurrency(resumen.balance)}
+              </Typography>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  color: 'text.secondary',
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                }}
+              >
+                Balance
+              </Typography>
+            </Box>
           </Card>
-        </Grid>
 
-        <Grid item xs={12} sm={6} lg={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
-                <CategoryIcon sx={{ color: 'info.main', fontSize: { xs: 28, sm: 32 } }} />
-                <Box sx={{ flex: 1, minWidth: 0, overflow: 'visible' }}>
-                  <Typography 
-                    variant="h4" 
-                    sx={{ 
-                      color: 'info.main', 
-                      fontWeight: 'bold',
-                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem', lg: '1.75rem' },
-                      whiteSpace: 'nowrap',
-                      overflow: 'visible',
-                      lineHeight: 1.2
-                    }}
-                  >
-                    {resumen.totalCategorias}
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: 'text.secondary',
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                    }}
-                  >
-                    Categorías
-                  </Typography>
-                </Box>
-              </Box>
-            </CardContent>
+          <Card
+            sx={{
+              width: '100%',
+              height: '100%',
+              p: 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
+            }}
+          >
+            <CategoryIcon sx={{ color: 'info.main', fontSize: { xs: 28, sm: 32 } }} />
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography 
+                sx={{ 
+                  color: 'info.main', 
+                  fontWeight: 'bold',
+                  fontSize: { xs: '1rem', sm: '1.3rem', md: '1.6rem', lg: '2rem', xl: '2.5rem' },
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {resumen.totalCategorias}
+              </Typography>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  color: 'text.secondary',
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                }}
+              >
+                Categorías
+              </Typography>
+            </Box>
           </Card>
-        </Grid>
-      </Grid>
-                  {/* Movimientos Recientes */}
-      <Grid container spacing={{ xs: 2, sm: 3 }}>
-        <Grid item xs={12} lg={8}>
+          </Box>
+
+          {/* PRESUPUESTO VS EJECUTADO */}
           <Card>
-            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-                  Movimientos Recientes
+            <CardContent sx={{ p: 2 }}>
+              <Typography variant="h6" fontWeight="bold" mb={2}>
+                Presupuesto vs Ejecutado por Categoría
+              </Typography>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Categoría</TableCell>
+                      <TableCell align="right">Presupuestado</TableCell>
+                      <TableCell align="right">Ejecutado</TableCell>
+                      <TableCell align="right">Diferencia</TableCell>
+                      <TableCell align="center">Estado</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>Alimentación</TableCell>
+                      <TableCell align="right">$2.000.000</TableCell>
+                      <TableCell align="right">$1.800.000</TableCell>
+                      <TableCell align="right" sx={{ color: 'success.main' }}>$200.000</TableCell>
+                      <TableCell align="center">
+                        <Chip label="Dentro de presupuesto" color="success" size="small" />
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Transporte</TableCell>
+                      <TableCell align="right">$500.000</TableCell>
+                      <TableCell align="right">$650.000</TableCell>
+                      <TableCell align="right" sx={{ color: 'error.main' }}>-$150.000</TableCell>
+                      <TableCell align="center">
+                        <Chip label="Excedido" color="error" size="small" />
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </CardContent>
+          </Card>
+        </Box>
+
+        {/* COLUMNA DERECHA - MOVIMIENTOS Y CATEGORÍAS */}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+
+        {/* MOVIMIENTOS RECIENTES */}
+        <Card>
+          <CardContent sx={{ p: 1 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+                Movimientos Recientes
+              </Typography>
+              <Button 
+                variant="outlined" 
+                size="small" 
+                onClick={() => navigate('/movimientos')}
+                sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+              >
+                Ver Todos
+              </Button>
+            </Box>
+            
+            {movimientosRecientes.length > 0 ? (
+              <TableContainer>
+                <Table sx={{ minWidth: { xs: 300, sm: 400, lg: 600 } }}>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Descripción</TableCell>
+                      <TableCell align="right" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Monto</TableCell>
+                      <TableCell align="center" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, display: { xs: 'none', sm: 'table-cell' } }}>Tipo</TableCell>
+                      <TableCell align="center" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, display: { xs: 'none', md: 'table-cell' } }}>Acciones</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {movimientosRecientes.map((movimiento) => (
+                      <TableRow key={movimiento.id}>
+                        <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+                          <Box>
+                            <Typography variant="body2" sx={{ fontWeight: 500, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+                              {movimiento.descripcion}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                              {formatDate(movimiento.fecha)}
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography
+                            sx={{
+                              color: movimiento.tipo === 'INGRESO' ? 'primary.main' : 'secondary.main',
+                              fontWeight: 600,
+                              fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {formatCurrency(movimiento.valor)}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="center" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                          <Chip
+                            label={tipoMovimientoLabel[movimiento.tipo as keyof typeof tipoMovimientoLabel]}
+                            color={movimiento.tipo === 'INGRESO' ? 'success' : 'warning'}
+                            size="small"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                          />
+                        </TableCell>
+                        <TableCell align="center" sx={{ display: { xs: 'none', md: 'table-cell' } }}>
+                          <IconButton
+                            color="primary"
+                            onClick={() => navigate(`/movimientos/edit/${movimiento.id}`)}
+                            size="small"
+                          >
+                            <EditIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                  No hay movimientos registrados
                 </Typography>
                 <Button 
-                  variant="outlined" 
-                  size="small" 
-                  onClick={() => navigate('/movimientos')}
-                  sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                  variant="contained" 
+                  sx={{ mt: 2 }}
+                  onClick={() => navigate('/movimientos/new')}
+                  size="small"
                 >
-                  Ver Todos
+                  Crear Primer Movimiento
                 </Button>
               </Box>
-              
-              {movimientosRecientes.length > 0 ? (
-                <TableContainer>
-                  <Table sx={{ minWidth: { xs: 300, sm: 400, lg: 600 } }}>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Descripción</TableCell>
-                        <TableCell align="right" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Monto</TableCell>
-                        <TableCell align="center" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, display: { xs: 'none', sm: 'table-cell' } }}>Tipo</TableCell>
-                        <TableCell align="center" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, display: { xs: 'none', md: 'table-cell' } }}>Acciones</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {movimientosRecientes.map((movimiento) => (
-                        <TableRow key={movimiento.id}>
-                          <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
-                            <Box>
-                              <Typography variant="body2" sx={{ fontWeight: 500, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
-                                {movimiento.descripcion}
-                              </Typography>
-                              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                                {formatDate(movimiento.fecha)}
-                              </Typography>
-                            </Box>
-                          </TableCell>
-                          <TableCell align="right">
-                            <Typography
-                              sx={{
-                                color: movimiento.tipo === 'INGRESO' ? 'primary.main' : 'secondary.main',
-                                fontWeight: 600,
-                                fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                                maxWidth: { xs: '80px', sm: '120px', md: '150px' }
-                              }}
-                            >
-                              {formatCurrency(movimiento.valor)}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="center" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                            <Chip
-                              label={tipoMovimientoLabel[movimiento.tipo as keyof typeof tipoMovimientoLabel]}
-                              color={movimiento.tipo === 'INGRESO' ? 'success' : 'warning'}
-                              size="small"
-                              sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
-                            />
-                          </TableCell>
-                          <TableCell align="center" sx={{ display: { xs: 'none', md: 'table-cell' } }}>
-                            <IconButton
-                              color="primary"
-                              onClick={() => navigate(`/movimientos/edit/${movimiento.id}`)}
-                              size="small"
-                            >
-                              <EditIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              ) : (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    No hay movimientos registrados
-                  </Typography>
-                  <Button 
-                    variant="contained" 
-                    sx={{ mt: 2 }}
-                    onClick={() => navigate('/movimientos/new')}
-                    size="small"
-                  >
-                    Crear Primer Movimiento
-                  </Button>
-                </Box>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
+            )}
+          </CardContent>
+        </Card>
 
-        <Grid item xs={12} lg={4}>
-          <Card>
-            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-                Categorías Recientes
-              </Typography>
-              
-              {categoriasRecientes.length > 0 ? (
-                <Box>
-                  {categoriasRecientes.map((categoria) => (
-                    <Box key={categoria.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 500, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
-                          {categoria.nombre}
-                        </Typography>
-                        <Chip
-                          label={tipoCategoriaLabel[categoria.tipo as keyof typeof tipoCategoriaLabel]}
-                          color={categoria.tipo === 'INGRESO' ? 'success' : 'warning'}
-                          size="small"
-                          sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, mt: 0.5 }}
-                        />
-                      </Box>
-                      <IconButton
-                        color="primary"
-                        onClick={() => navigate(`/categorias/edit/${categoria.id}`)}
+        {/* CATEGORÍAS RECIENTES */}
+        <Card>
+          <CardContent sx={{ p: 1 }}>
+            <Typography variant="h6" fontWeight="bold" mb={1}>
+              Categorías Recientes
+            </Typography>
+            {categoriasRecientes.length > 0 ? (
+              <Box>
+                {categoriasRecientes.map((categoria) => (
+                  <Box key={categoria.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+                        {categoria.nombre}
+                      </Typography>
+                      <Chip
+                        label={tipoCategoriaLabel[categoria.tipo as keyof typeof tipoCategoriaLabel]}
+                        color={categoria.tipo === 'INGRESO' ? 'success' : 'warning'}
                         size="small"
-                      >
-                        <EditIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
-                      </IconButton>
+                        sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, mt: 0.5 }}
+                      />
                     </Box>
-                  ))}
-                </Box>
-              ) : (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    No hay categorías registradas
-                  </Typography>
-                  <Button 
-                    variant="contained" 
-                    sx={{ mt: 2 }}
-                    onClick={() => navigate('/categorias/new')}
-                    size="small"
-                  >
-                    Crear Primera Categoría
-                  </Button>
-                </Box>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+                    <IconButton
+                      color="primary"
+                      onClick={() => navigate(`/categorias/edit/${categoria.id}`)}
+                      size="small"
+                    >
+                      <EditIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
+                    </IconButton>
+                  </Box>
+                ))}
+              </Box>
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                  No hay categorías registradas
+                </Typography>
+                <Button 
+                  variant="contained" 
+                  sx={{ mt: 2 }}
+                  onClick={() => navigate('/categorias/new')}
+                  size="small"
+                >
+                  Crear Primera Categoría
+                </Button>
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+        </Box>
+      </Box>
     </Box>
   );
 };
