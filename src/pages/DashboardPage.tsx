@@ -158,7 +158,7 @@ const DashboardPage: React.FC = () => {
       {/* LAYOUT PRINCIPAL - GRID DE 2 COLUMNAS */}
       <Box sx={{ 
         display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
+        gridTemplateColumns: '2fr 1fr',
         gap: 2,
         width: '100%',
         p: 2,
