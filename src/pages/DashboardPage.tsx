@@ -370,15 +370,15 @@ const DashboardPage: React.FC = () => {
               <Box>
                 {categoriasRecientes.map((categoria) => (
                   <Box key={categoria.id} sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 500, fontSize: { xs: '0.8rem', sm: '0.875rem' }, flex: 1 }}>
+                      {categoria.nombre}
+                    </Typography>
                     <Chip
                       label={tipoCategoriaLabel[categoria.tipo as keyof typeof tipoCategoriaLabel]}
                       color={categoria.tipo === 'INGRESO' ? 'success' : 'warning'}
                       size="small"
                       sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
                     />
-                    <Typography variant="body2" sx={{ fontWeight: 500, fontSize: { xs: '0.8rem', sm: '0.875rem' }, flex: 1 }}>
-                      {categoria.nombre}
-                    </Typography>
                   </Box>
                 ))}
               </Box>
@@ -419,18 +419,18 @@ const DashboardPage: React.FC = () => {
             
             {movimientosRecientes.length > 0 ? (
               <TableContainer>
-                <Table sx={{ minWidth: { xs: 300, sm: 400, lg: 600 } }}>
+                <Table sx={{ width: '100%', tableLayout: 'fixed' }}>
                   <TableHead>
                     <TableRow>
-                      <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Descripción</TableCell>
-                      <TableCell align="right" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Monto</TableCell>
-                      <TableCell align="center" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, display: { xs: 'none', sm: 'table-cell' } }}>Tipo</TableCell>
+                      <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, width: '50%' }}>Descripción</TableCell>
+                      <TableCell align="right" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, width: '25%' }}>Monto</TableCell>
+                      <TableCell align="center" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, display: { xs: 'none', sm: 'table-cell' }, width: '25%' }}>Tipo</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {movimientosRecientes.map((movimiento) => (
                       <TableRow key={movimiento.id}>
-                        <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+                        <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, width: '50%' }}>
                           <Box>
                             <Typography variant="body2" sx={{ fontWeight: 500, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
                               {movimiento.descripcion}
@@ -440,7 +440,7 @@ const DashboardPage: React.FC = () => {
                             </Typography>
                           </Box>
                         </TableCell>
-                        <TableCell align="right">
+                        <TableCell align="right" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' }, width: '25%' }}>
                           <Typography
                             sx={{
                               color: movimiento.tipo === 'INGRESO' ? 'primary.main' : 'secondary.main',
@@ -452,7 +452,7 @@ const DashboardPage: React.FC = () => {
                             {formatCurrency(movimiento.valor)}
                           </Typography>
                         </TableCell>
-                        <TableCell align="center" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                        <TableCell align="center" sx={{ display: { xs: 'none', sm: 'table-cell' }, width: '25%' }}>
                           <Chip
                             label={tipoMovimientoLabel[movimiento.tipo as keyof typeof tipoMovimientoLabel]}
                             color={movimiento.tipo === 'INGRESO' ? 'success' : 'warning'}
