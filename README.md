@@ -9,10 +9,11 @@
 5. [Estructura del Proyecto](#5-estructura-del-proyecto)
 6. [Instalación y Configuración](#6-instalación-y-ejecución)
 7. [Módulos del Sistema](#7-módulos-del-sistema)
-8. [API REST Endpoints](#8-api-rest-endpoints)
-9. [Seguridad](#9-seguridad-del-sistema)
-10. [Mejoras Futuras](#10-mejoras-futuras)
-11. [Licencia](#11-licencia)
+8. [Diseño y Temas](#8-diseño-y-temas)
+9. [API REST Endpoints](#9-api-rest-endpoints)
+10. [Seguridad](#10-seguridad-del-sistema)
+11. [Mejoras Futuras](#11-mejoras-futuras)
+12. [Licencia](#12-licencia)
 
 ---
 
@@ -444,7 +445,147 @@ const calcularPresupuestoVsEjecutado = (presupuestos, movimientos, categorias) =
 
 ---
 
-## 8. API REST Endpoints
+## 8. Diseño y Temas
+
+### 🎨 Sistema de Temas Financieros
+
+La aplicación implementa un sistema de temas completo optimizado para aplicaciones financieras, siguiendo las mejores prácticas de diseño y accesibilidad.
+
+#### **Paleta de Colores Semánticos**
+
+**Colores de Marca**
+- **Primario (Indigo)**: `#3F51B5` - Transmite confianza y estructura
+- **Secundario (Rosa)**: `#FF4081` - Para acentos y llamadas a la acción
+
+**Colores Financieros**
+- **Ingresos (Verde Esmeralda)**: `#00C853` - Crecimiento y abundancia
+- **Gastos (Rojo Coral)**: `#D32F2F` - Pérdidas y alertas críticas
+- **Advertencia (Ámbar)**: `#FFA000` - Presupuestos por agotarse
+- **Información (Azul Claro)**: `#0288D1` - Tips e información neutral
+
+**Colores de Superficie**
+- **Fondo Claro**: `#F4F7FE` - Descanso visual
+- **Tarjetas**: `#FFFFFF` - Contenedores de datos
+- **Fondo Oscuro**: `#121212` - Modo oscuro
+- **Tarjetas Oscuras**: `#1E1E1E` - Contenedores en modo oscuro
+
+#### **🌓 Modo Oscuro**
+
+Soporte completo para modo oscuro con colores optimizados:
+- **Ingresos**: `#00E676` (Verde neón)
+- **Gastos**: `#FF5252` (Rojo brillante)
+- **Advertencia**: `#FF9100` (Naranja sunrise)
+- **Información**: `#40C4FF` (Azul brillante)
+
+#### **🎯 Regla 60-30-10**
+
+La aplicación sigue la regla de diseño 60-30-10:
+- **60%**: Colores neutros (fondos)
+- **30%**: Color de marca (botones, navegación)
+- **10%**: Colores de acento (datos críticos)
+
+#### **♿ Accesibilidad**
+
+**Contraste WCAG**
+- Todos los colores cumplen con el ratio de contraste WCAG de 4.5:1 como mínimo
+
+**Uso Semántico del Color**
+- El color nunca es el único indicador de información
+- Estados de presupuesto incluyen iconos y texto
+- Transacciones usan badges con texto descriptivo
+- Indicadores de estado incluyen puntos de color + texto
+
+#### **🛠️ Componentes Temáticos**
+
+**FinancialCard**
+```tsx
+<FinancialCard
+  title="Ingresos del Mes"
+  amount={5000000}
+  type="income"
+  trend={{ value: 12.5, isPositive: true }}
+/>
+```
+
+**TransactionItem**
+```tsx
+<TransactionItem
+  description="Supermercado"
+  amount={250000}
+  category="Alimentación"
+  date="24/03/2026"
+  type="expense"
+/>
+```
+
+**BudgetProgress**
+```tsx
+<BudgetProgress
+  category="Transporte"
+  spent={300000}
+  budget={500000}
+/>
+```
+
+#### **🎨 Clases CSS Disponibles**
+
+**Botones**
+- `.btn-primary` - Botón principal (indigo)
+- `.btn-secondary` - Botón secundario (rosa)
+- `.btn-success` - Botón de éxito (verde ingresos)
+- `.btn-danger` - Botón de peligro (rojo gastos)
+
+**Tarjetas**
+- `.financial-card` - Tarjeta financiera base
+- `.chart-container` - Contenedor para gráficos
+
+**Badges**
+- `.badge-income` - Badge de ingresos
+- `.badge-expense` - Badge de gastos
+- `.badge-warning` - Badge de advertencia
+
+**Utilidades**
+- `.text-income` - Texto color ingresos
+- `.text-expense` - Texto color gastos
+- `.text-warning` - Texto color advertencia
+- `.bg-income-soft` - Fondo suave ingresos
+- `.bg-expense-soft` - Fondo suave gastos
+- `.bg-warning-soft` - Fondo suave advertencia
+
+#### **🔄 Cambio de Tema**
+
+El tema persiste en localStorage y responde a las preferencias del sistema:
+
+```tsx
+import { ThemeToggle } from '../components/ThemeToggle';
+
+// Botón de cambio de tema
+<ThemeToggle variant="button" />
+
+// Switch de cambio de tema
+<ThemeToggle variant="switch" />
+```
+
+#### **📱 Mejores Prácticas de Diseño**
+
+1. **Consistencia Semántica**
+   - Siempre usar colores `income` para valores positivos
+   - Siempre usar colores `expense` para valores negativos
+   - Usar `warning` para estados límite (80-90%)
+
+2. **Jerarquía Visual**
+   - Títulos más grandes y en color primario
+   - Montos financieros en colores semánticos
+   - Información secundaria en colores neutros
+
+3. **Estados Interactivos**
+   - Hover con cambios sutiles de opacidad
+   - Focus con anillos de color primario
+   - Loading con skeletons grises neutros
+
+---
+
+## 9. API REST Endpoints
 
 ### Arquitectura de APIs
 
@@ -516,7 +657,7 @@ const calcularPresupuestoVsEjecutado = (presupuestos, movimientos, categorias) =
 
 ---
 
-## 9. Seguridad del Sistema
+## 10. Seguridad del Sistema
 
 ### 🔐 Encriptación y Autenticación
 - **JWT**: Tokens JSON Web Tokens con expiración configurable
@@ -538,7 +679,7 @@ const calcularPresupuestoVsEjecutado = (presupuestos, movimientos, categorias) =
 
 ---
 
-## 10. Mejoras Futuras
+## 11. Mejoras Futuras
 
 ### 🚀 Mejoras Técnicas
 
@@ -579,7 +720,7 @@ const calcularPresupuestoVsEjecutado = (presupuestos, movimientos, categorias) =
 
 ---
 
-## 11. Licencia
+## 12. Licencia
 
 ### Propósito del Proyecto
 - **Educativo**: Demostrar la aplicación práctica de conceptos de ingeniería de software
