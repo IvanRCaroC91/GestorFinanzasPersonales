@@ -48,6 +48,7 @@ const DashboardPage: React.FC = () => {
   });
   const [movimientosRecientes, setMovimientosRecientes] = useState<Movimiento[]>([]);
   const [categoriasRecientes, setCategoriasRecientes] = useState<Categoria[]>([]);
+  const [presupuestosData, setPresupuestosData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -100,11 +101,56 @@ const DashboardPage: React.FC = () => {
       setMovimientosRecientes(movimientos.slice(0, 5));
       setCategoriasRecientes(categorias.slice(0, 5));
 
+      // Calcular presupuesto vs ejecutado
+      const presupuestoVsEjecutado = calcularPresupuestoVsEjecutado(presupuestos, movimientos, categorias);
+      setPresupuestosData(presupuestoVsEjecutado);
+
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const calcularPresupuestoVsEjecutado = (presupuestos: any[], movimientos: Movimiento[], categorias: Categoria[]) => {
+    const fechaActual = new Date();
+    const primerDiaMes = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), 1);
+    
+    // Filtrar movimientos del mes actual
+    const movimientosMes = movimientos.filter(mov => 
+      new Date(mov.fecha) >= primerDiaMes
+    );
+
+    // Filtrar presupuestos del mes actual
+    const presupuestosMes = presupuestos.filter(presupuesto => 
+      presupuesto.anio === fechaActual.getFullYear() && 
+      presupuesto.mes === fechaActual.getMonth() + 1
+    );
+
+    return presupuestosMes.map(presupuestoItem => {
+      const categoria = categorias.find(cat => cat.id === presupuestoItem.categoriaId);
+      const movimientosCategoria = movimientosMes.filter(mov => 
+        mov.categoriaId === presupuestoItem.categoriaId
+      );
+
+      const ejecutado = movimientosCategoria
+        .filter(mov => mov.tipo === 'EGRESO')
+        .reduce((sum, mov) => sum + (mov.valor || 0), 0);
+
+      const presupuesto = presupuestoItem.montoLimite || 0;
+      const diferencia = presupuesto - ejecutado;
+      const porcentajeUtilizado = presupuesto > 0 ? (ejecutado / presupuesto) * 100 : 0;
+
+      return {
+        categoria: categoria?.nombre || 'Sin categoría',
+        presupuesto,
+        ejecutado,
+        diferencia,
+        porcentajeUtilizado,
+        estado: diferencia >= 0 ? 'Dentro de presupuesto' : 'Excedido',
+        colorEstado: diferencia >= 0 ? 'success' : 'error'
+      };
+    });
   };
 
   const formatCurrency = (amount: number) => {
@@ -138,20 +184,53 @@ const DashboardPage: React.FC = () => {
       m: 0
     }}>
       {/* Header */}
-      <Box sx={{ p: 2, mb: 2 }}>
+      <Box sx={{ 
+        p: 3, 
+        mb: 3,
+        textAlign: 'center',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        borderRadius: 2,
+        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+        position: 'relative',
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)',
+          pointerEvents: 'none'
+        }
+      }}>
         <Typography 
-          variant="h4" 
+          variant="h3" 
           sx={{ 
-            fontWeight: 'bold', 
-            color: '#1A1A1A', 
+            fontWeight: '800', 
+            color: '#FFFFFF', 
             mb: 1,
-            fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
+            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem', lg: '3.5rem' },
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+            letterSpacing: '-0.5px',
+            position: 'relative',
+            zIndex: 1
           }}
         >
-          Dashboard Financiero
+          💰 Dashboard Financiero
         </Typography>
-        <Typography variant="body2" sx={{ color: '#666666' }}>
-          Resumen general de tus finanzas personales
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            color: 'rgba(255,255,255,0.9)',
+            fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+            fontWeight: '400',
+            textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+            position: 'relative',
+            zIndex: 1
+          }}
+        >
+          📊 Resumen general de tus finanzas personales
         </Typography>
       </Box>
 
@@ -163,11 +242,12 @@ const DashboardPage: React.FC = () => {
           sm: 'repeat(2, 1fr)',
           md: 'repeat(3, 1fr)',
           lg: 'repeat(4, 1fr)',
-          xl: 'repeat(5, 1fr)'
+          xl: 'repeat(4, 1fr)'
         },
         gap: 1.5,
         p: 2,
-        width: '100%'
+        width: '100%',
+        justifyContent: 'center'
       }}>
         <Card
             sx={{
@@ -176,17 +256,21 @@ const DashboardPage: React.FC = () => {
               p: 1,
               display: 'flex',
               alignItems: 'center',
-              gap: 1
+              gap: 1,
+              minWidth: 0
             }}
           >
-            <TrendingUpIcon sx={{ color: 'primary.main', fontSize: { xs: 28, sm: 32 } }} />
-            <Box sx={{ flex: 1, minWidth: 0 }}>
+            <TrendingUpIcon sx={{ color: 'primary.main', fontSize: { xs: 28, sm: 32 }, flexShrink: 0 }} />
+            <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
               <Typography 
                 sx={{ 
                   color: 'primary.main', 
                   fontWeight: 'bold',
-                  fontSize: { xs: '1rem', sm: '1.3rem', md: '1.6rem', lg: '2rem', xl: '2.5rem' },
-                  whiteSpace: 'nowrap'
+                  fontSize: { xs: '1.5rem', sm: '1.6rem', md: '1.7rem', lg: '1.8rem', xl: '1.9rem' },
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  lineHeight: 1.2
                 }}
               >
                 {formatCurrency(resumen.totalIngresos)}
@@ -210,17 +294,21 @@ const DashboardPage: React.FC = () => {
               p: 1,
               display: 'flex',
               alignItems: 'center',
-              gap: 1
+              gap: 1,
+              minWidth: 0
             }}
           >
-            <TrendingDownIcon sx={{ color: 'secondary.main', fontSize: { xs: 28, sm: 32 } }} />
-            <Box sx={{ flex: 1, minWidth: 0 }}>
+            <TrendingDownIcon sx={{ color: 'secondary.main', fontSize: { xs: 28, sm: 32 }, flexShrink: 0 }} />
+            <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
               <Typography 
                 sx={{ 
                   color: 'secondary.main', 
                   fontWeight: 'bold',
-                  fontSize: { xs: '1rem', sm: '1.3rem', md: '1.6rem', lg: '2rem', xl: '2.5rem' },
-                  whiteSpace: 'nowrap'
+                  fontSize: { xs: '1.5rem', sm: '1.6rem', md: '1.7rem', lg: '1.8rem', xl: '1.9rem' },
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  lineHeight: 1.2
                 }}
               >
                 {formatCurrency(resumen.totalGastos)}
@@ -244,17 +332,21 @@ const DashboardPage: React.FC = () => {
               p: 1,
               display: 'flex',
               alignItems: 'center',
-              gap: 1
+              gap: 1,
+              minWidth: 0
             }}
           >
-            <BalanceIcon sx={{ color: resumen.balance >= 0 ? 'primary.main' : 'secondary.main', fontSize: { xs: 28, sm: 32 } }} />
-            <Box sx={{ flex: 1, minWidth: 0 }}>
+            <BalanceIcon sx={{ color: resumen.balance >= 0 ? 'primary.main' : 'secondary.main', fontSize: { xs: 28, sm: 32 }, flexShrink: 0 }} />
+            <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
               <Typography 
                 sx={{ 
                   color: resumen.balance >= 0 ? 'primary.main' : 'secondary.main', 
                   fontWeight: 'bold',
-                  fontSize: { xs: '1rem', sm: '1.3rem', md: '1.6rem', lg: '2rem', xl: '2.5rem' },
-                  whiteSpace: 'nowrap'
+                  fontSize: { xs: '1.5rem', sm: '1.6rem', md: '1.7rem', lg: '1.8rem', xl: '1.9rem' },
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  lineHeight: 1.2
                 }}
               >
                 {formatCurrency(resumen.balance)}
@@ -278,17 +370,21 @@ const DashboardPage: React.FC = () => {
               p: 1,
               display: 'flex',
               alignItems: 'center',
-              gap: 1
+              gap: 1,
+              minWidth: 0
             }}
           >
-            <CategoryIcon sx={{ color: 'info.main', fontSize: { xs: 28, sm: 32 } }} />
-            <Box sx={{ flex: 1, minWidth: 0 }}>
+            <CategoryIcon sx={{ color: 'info.main', fontSize: { xs: 28, sm: 32 }, flexShrink: 0 }} />
+            <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
               <Typography 
                 sx={{ 
                   color: 'info.main', 
                   fontWeight: 'bold',
-                  fontSize: { xs: '1rem', sm: '1.3rem', md: '1.6rem', lg: '2rem', xl: '2.5rem' },
-                  whiteSpace: 'nowrap'
+                  fontSize: { xs: '1.5rem', sm: '1.6rem', md: '1.7rem', lg: '1.8rem', xl: '1.9rem' },
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  lineHeight: 1.2
                 }}
               >
                 {resumen.totalCategorias}
@@ -309,7 +405,7 @@ const DashboardPage: React.FC = () => {
       {/* LAYOUT PRINCIPAL - GRID DE 2 COLUMNAS */}
       <Box sx={{ 
         display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
+        gridTemplateColumns: '67% 33%',
         gap: 2,
         width: '100%',
         p: 2
@@ -334,24 +430,33 @@ const DashboardPage: React.FC = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    <TableRow>
-                      <TableCell>Alimentación</TableCell>
-                      <TableCell align="right">$2.000.000</TableCell>
-                      <TableCell align="right">$1.800.000</TableCell>
-                      <TableCell align="right" sx={{ color: 'success.main' }}>$200.000</TableCell>
-                      <TableCell align="center">
-                        <Chip label="Dentro de presupuesto" color="success" size="small" />
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>Transporte</TableCell>
-                      <TableCell align="right">$500.000</TableCell>
-                      <TableCell align="right">$650.000</TableCell>
-                      <TableCell align="right" sx={{ color: 'error.main' }}>-$150.000</TableCell>
-                      <TableCell align="center">
-                        <Chip label="Excedido" color="error" size="small" />
-                      </TableCell>
-                    </TableRow>
+                    {presupuestosData.length > 0 ? (
+                      presupuestosData.map((item, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{item.categoria}</TableCell>
+                          <TableCell align="right">{formatCurrency(item.presupuesto)}</TableCell>
+                          <TableCell align="right">{formatCurrency(item.ejecutado)}</TableCell>
+                          <TableCell align="right" sx={{ color: item.diferencia >= 0 ? 'success.main' : 'error.main' }}>
+                            {item.diferencia >= 0 ? '+' : ''}{formatCurrency(item.diferencia)}
+                          </TableCell>
+                          <TableCell align="center">
+                            <Chip 
+                              label={item.estado} 
+                              color={item.colorEstado as 'success' | 'error'} 
+                              size="small" 
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} sx={{ textAlign: 'center', py: 4 }}>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            No hay presupuestos registrados para este mes
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -360,7 +465,7 @@ const DashboardPage: React.FC = () => {
         </Box>
 
         {/* COLUMNA DERECHA - CATEGORÍAS Y MOVIMIENTOS */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, maxWidth: '400px' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
 
         {/* CATEGORÍAS RECIENTES */}
         <Card>
