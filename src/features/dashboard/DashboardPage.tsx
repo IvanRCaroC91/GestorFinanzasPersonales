@@ -162,30 +162,80 @@ const DashboardPage: React.FC = () => {
       presupuesto.mes === fechaActual.getMonth() + 1
     );
 
-    return presupuestosMes.map(presupuestoItem => {
-      const categoria = categorias.find(cat => cat.id === presupuestoItem.categoriaId);
-      const movimientosCategoria = movimientosMes.filter(mov => 
-        mov.categoriaId === presupuestoItem.categoriaId
-      );
+    console.log('[Dashboard] Datos para cálculo:', {
+      categoriasCount: categorias.length,
+      movimientosMesCount: movimientosMes.length,
+      presupuestosMesCount: presupuestosMes.length
+    });
 
-      const ejecutado = movimientosCategoria
-        .filter(mov => mov.tipo === 'EGRESO')
-        .reduce((sum, mov) => sum + (mov.valor || 0), 0);
+    // PASO 1: Crear mapa de presupuestos por categoriaId
+    const presupuestosMap = presupuestosMes.reduce((map, presupuesto) => {
+      map[presupuesto.categoriaId] = presupuesto.montoLimite || 0;
+      return map;
+    }, {} as { [key: string]: number });
 
-      const presupuesto = presupuestoItem.montoLimite || 0;
-      const diferencia = presupuesto - ejecutado;
-      const porcentajeUtilizado = presupuesto > 0 ? (ejecutado / presupuesto) * 100 : 0;
+    console.log('[Dashboard] Mapa de presupuestos:', presupuestosMap);
 
-      return {
+    // PASO 2: Identificar todas las categorías que tienen movimientos en el mes
+    const categoriasConMovimientos = new Set<string>();
+    movimientosMes.forEach(movimiento => {
+      categoriasConMovimientos.add(movimiento.categoriaId);
+    });
+
+    console.log('[Dashboard] Categorías con movimientos:', Array.from(categoriasConMovimientos));
+
+    // PASO 3: Crear mapa de ejecutado por categoría
+    const ejecutadoPorCategoria = movimientosMes.reduce((map, movimiento) => {
+      // Solo sumar egresos para comparación con presupuestos
+      if (movimiento.tipo === 'EGRESO') {
+        map[movimiento.categoriaId] = (map[movimiento.categoriaId] || 0) + (movimiento.valor || 0);
+      }
+      return map;
+    }, {} as { [key: string]: number });
+
+    console.log('[Dashboard] Ejecutado por categoría:', ejecutadoPorCategoria);
+
+    // PASO 4: Generar resultado combinando presupuestos y ejecutados
+    const resultado: any[] = [];
+
+    // 4.1: Primero procesar categorías con movimientos
+    categoriasConMovimientos.forEach(categoriaId => {
+      const categoria = categorias.find(cat => cat.id === categoriaId);
+      const presupuestado = presupuestosMap[categoriaId] || 0;
+      const ejecutado = ejecutadoPorCategoria[categoriaId] || 0;
+      const diferencia = presupuestado - ejecutado;
+      const porcentajeUtilizado = presupuestado > 0 ? (ejecutado / presupuestado) * 100 : 0;
+
+      resultado.push({
         categoria: categoria?.nombre || 'Sin categoría',
-        presupuesto,
+        presupuestado,
         ejecutado,
         diferencia,
         porcentajeUtilizado,
         estado: diferencia >= 0 ? 'Dentro de presupuesto' : 'Excedido',
         colorEstado: diferencia >= 0 ? 'success' : 'error'
-      };
+      });
     });
+
+    // 4.2: Luego agregar categorías con presupuesto pero sin movimientos (opcional)
+    Object.keys(presupuestosMap).forEach(categoriaId => {
+      if (!categoriasConMovimientos.has(categoriaId)) {
+        const categoria = categorias.find(cat => cat.id === categoriaId);
+        resultado.push({
+          categoria: categoria?.nombre || 'Sin categoría',
+          presupuestado: presupuestosMap[categoriaId],
+          ejecutado: 0,
+          diferencia: presupuestosMap[categoriaId],
+          porcentajeUtilizado: 0,
+          estado: 'Dentro de presupuesto',
+          colorEstado: 'success'
+        });
+      }
+    });
+
+    console.log('[Dashboard] Resultado final combinado:', resultado);
+
+    return resultado;
   };
 
   const formatCurrency = (amount: number) => {
