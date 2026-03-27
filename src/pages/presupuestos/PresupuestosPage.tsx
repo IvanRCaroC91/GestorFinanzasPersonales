@@ -79,8 +79,10 @@ const PresupuestosPage: React.FC = () => {
   };
 
   const handleCreate = () => {
+    console.log('[PresupuestosPage] handleCreate called');
     setEditingPresupuesto(null);
     setOpenDialog(true);
+    console.log('[PresupuestosPage] Dialog should open now');
   };
 
   const handleEdit = (presupuesto: Presupuesto) => {
@@ -174,7 +176,10 @@ const PresupuestosPage: React.FC = () => {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={handleCreate}
+              onClick={() => {
+                console.log('[PresupuestosPage] Button clicked');
+                handleCreate();
+              }}
             >
               Nuevo Presupuesto
             </Button>

@@ -70,11 +70,11 @@ const Home = () => {
       
       const ingresosMes = movimientosMes
         .filter(mov => mov.tipo === 'INGRESO')
-        .reduce((sum, mov) => sum + mov.monto, 0);
+        .reduce((sum, mov) => sum + (mov.valor || 0), 0);
         
       const gastosMes = movimientosMes
-        .filter(mov => mov.tipo === 'GASTO')
-        .reduce((sum, mov) => sum + mov.monto, 0);
+        .filter(mov => mov.tipo === 'EGRESO')
+        .reduce((sum, mov) => sum + (mov.valor || 0), 0);
 
       setResumen({
         totalCategorias: categoriasData.length,

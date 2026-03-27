@@ -10,6 +10,7 @@ import {
   Grid,
 } from '@mui/material';
 import { Movimiento, Categoria } from '../../types/finance';
+import { tipoMovimientoLabel } from '../../utils/tipoMovimientoMapper';
 
 interface MovimientoFormProps {
   movimiento?: Movimiento | null;
@@ -24,13 +25,13 @@ const MovimientoForm: React.FC<MovimientoFormProps> = ({ movimiento, categorias,
     descripcion: '',
     categoriaId: '',
     fecha: new Date().toISOString().split('T')[0],
-    tipo: 'GASTO' as 'INGRESO' | 'GASTO',
+    tipo: 'EGRESO' as 'INGRESO' | 'EGRESO',
   });
 
   useEffect(() => {
     if (movimiento) {
       setFormData({
-        monto: movimiento.monto.toString(),
+        monto: (movimiento.valor || 0).toString(),
         descripcion: movimiento.descripcion,
         categoriaId: movimiento.categoriaId,
         fecha: movimiento.fecha.split('T')[0],
@@ -66,8 +67,11 @@ const MovimientoForm: React.FC<MovimientoFormProps> = ({ movimiento, categorias,
     }
     
     onSave({
-      ...formData,
-      monto: parseFloat(formData.monto),
+      valor: parseFloat(formData.monto),
+      descripcion: formData.descripcion,
+      categoriaId: formData.categoriaId,
+      fecha: formData.fecha,
+      tipo: formData.tipo,
     });
   };
 
@@ -84,8 +88,8 @@ const MovimientoForm: React.FC<MovimientoFormProps> = ({ movimiento, categorias,
               onChange={handleChange('tipo')}
               label="Tipo"
             >
-              <MenuItem value="INGRESO">Ingreso</MenuItem>
-              <MenuItem value="GASTO">Gasto</MenuItem>
+              <MenuItem value="INGRESO">{tipoMovimientoLabel.INGRESO}</MenuItem>
+              <MenuItem value="EGRESO">{tipoMovimientoLabel.EGRESO}</MenuItem>
             </Select>
           </FormControl>
         </Grid>

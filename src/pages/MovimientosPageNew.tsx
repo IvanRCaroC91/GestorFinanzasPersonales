@@ -35,6 +35,7 @@ import {
 } from '@mui/icons-material';
 import financeService from '../services/financeService';
 import { Movimiento, Categoria } from '../types/finance';
+import { tipoMovimientoLabel } from '../utils/tipoMovimientoMapper';
 import MovimientoForm from './movimientos/MovimientoForm';
 
 interface Filters {
@@ -311,13 +312,13 @@ const MovimientosPage: React.FC = () => {
                             fontWeight: 600,
                           }}
                         >
-                          {formatCurrency(movimiento.monto)}
+                          {formatCurrency(movimiento.valor)}
                         </Typography>
                       </Box>
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={movimiento.tipo}
+                        label={tipoMovimientoLabel[movimiento.tipo as keyof typeof tipoMovimientoLabel]}
                         color={movimiento.tipo === 'INGRESO' ? 'success' : 'warning'}
                         size="small"
                       />

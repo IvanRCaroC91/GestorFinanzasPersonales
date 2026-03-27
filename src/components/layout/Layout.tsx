@@ -110,17 +110,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex' }}>
-        <Sidebar />
-        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ display: 'flex', height: '100vh' }}>
+        <Box sx={{ 
+          width: '280px',
+          flexShrink: 0
+        }}>
+          <Sidebar />
+        </Box>
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <Topbar user={user} />
           <Box
             component="main"
             sx={{
-              flexGrow: 1,
-              p: 3,
+              flex: 1,
+              p: 0,
               backgroundColor: 'background.default',
-              minHeight: '100vh',
+              overflow: 'auto',
             }}
           >
             {children}

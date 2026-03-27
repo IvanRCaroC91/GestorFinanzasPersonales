@@ -92,7 +92,7 @@ export const useAuthenticatedPost = <T = any>() => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: data ? JSON.stringify(data) : undefined,
+      data: data,
     });
   }, [execute]);
 
@@ -114,7 +114,7 @@ export const useAuthenticatedPut = <T = any>() => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: data ? JSON.stringify(data) : undefined,
+      data: data,
     });
   }, [execute]);
 

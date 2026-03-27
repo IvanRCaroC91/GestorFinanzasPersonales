@@ -61,13 +61,15 @@ const Sidebar: React.FC = () => {
     <Drawer
       variant="permanent"
       sx={{
-        width: drawerWidth,
-        flexShrink: 0,
+        width: '100%',
+        height: '100%',
         '& .MuiDrawer-paper': {
-          width: drawerWidth,
+          width: '100%',
+          height: '100%',
           boxSizing: 'border-box',
           backgroundColor: '#FFFFFF',
           borderRight: '1px solid #E0E0E0',
+          position: 'relative',
         },
       }}
     >
