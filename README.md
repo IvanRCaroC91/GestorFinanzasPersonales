@@ -20,7 +20,7 @@
 ## 1. Introducción del Proyecto
 
 ### ¿Qué es el sistema?
-Gestión Financiera - Presupuesto Personal es una aplicación web full-stack con arquitectura de microservicios desarrollada como proyecto universitario para la materia de Ingeniería de Software. El sistema proporciona una plataforma digital para que los usuarios puedan administrar sus finanzas personales de manera segura y eficiente.
+Gestión Financiera - Presupuesto Personal es una aplicación web full-stack con arquitectura de microservicios desarrollada como proyecto tecnológico del SENA para la tecnología de Análisis y Desarrollo de Software. El sistema proporciona una plataforma digital para que los usuarios puedan administrar sus finanzas personales de manera segura y eficiente.
 
 ### 🎯 Estado Actual: **PRODUCCIÓN FUNCIONAL**
 El sistema ha evolucionado desde un prototipo académico hasta una aplicación financiera completa con dashboard, gestión de movimientos, categorías y presupuestos, utilizando una arquitectura moderna de microservicios con Spring Boot.
@@ -723,9 +723,9 @@ import { ThemeToggle } from '../components/ThemeToggle';
 ## 12. Licencia
 
 ### Propósito del Proyecto
-- **Educativo**: Demostrar la aplicación práctica de conceptos de ingeniería de software
+- **Educativo**: Demostrar la aplicación práctica de conceptos de desarrollo de software
 - **Formativo**: Servir como portafolio de competencias técnicas desarrolladas
-- **Académico**: Cumplir con los requisitos del programa de estudios
+- **Tecnológico**: Cumplir con los requisitos del programa de tecnología del SENA
 
 ### Restricciones de Uso
 - **No Comercial**: Este proyecto no tiene fines comerciales ni lucrativos
@@ -754,7 +754,7 @@ El proyecto "Gestión Financiera - Presupuesto Personal" representa una implemen
 - ✅ **Calidad de Código**: TypeScript, ESLint, buenas prácticas
 
 ### 📈 Impacto y Aplicabilidad
-- **Académico**: Síntesis de conocimientos adquiridos en el programa
+- **Técnico**: Síntesis de conocimientos adquiridos en el programa del SENA
 - **Profesional**: Portafolio que demuestra competencias técnicas integrales
 - **Práctico**: Herramienta funcional con potencial de uso real
 
@@ -762,6 +762,6 @@ El proyecto "Gestión Financiera - Presupuesto Personal" representa una implemen
 
 ## 📞 Contacto y Soporte
 
-Para consultas académicas o colaboraciones educativas, este proyecto puede ser referenciado como ejemplo de implementación de prácticas modernas de desarrollo de software con arquitectura de microservicios en contextos universitarios.
+Para consultas técnicas o colaboraciones educativas, este proyecto puede ser referenciado como ejemplo de implementación de prácticas modernas de desarrollo de software con arquitectura de microservicios en el contexto del programa tecnológico del SENA.
 
 **Nota**: Este software se proporciona "tal cual" sin garantías explícitas o implícitas, siendo su principal objetivo el aprendizaje y la demostración de competencias técnicas.
