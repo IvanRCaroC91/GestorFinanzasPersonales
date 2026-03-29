@@ -116,7 +116,7 @@ const DashboardPage: React.FC = () => {
         descripcion: m.descripcion,
         categoriaId: m.categoriaId,
         categoriaEncontrada: !!m.categoria,
-        categoriaNombre: m.categoria?.nombre || 'Sin categoría'
+        categoriaNombre: m.categoria?.nombre
       })));
       
       const movimientosOrdenados = movimientosConCategorias.sort((a, b) => {
@@ -130,7 +130,7 @@ const DashboardPage: React.FC = () => {
         descripcion: m.descripcion,
         fecha: m.fecha,
         fechaFormateada: new Date(m.fecha).toLocaleString(),
-        categoria: m.categoria?.nombre || 'Sin categoría',
+        categoria: m.categoria?.nombre,
         categoriaId: m.categoriaId
       })));
       
@@ -168,27 +168,61 @@ const DashboardPage: React.FC = () => {
       presupuestosMesCount: presupuestosMes.length
     });
 
-    // PASO 1: Crear mapa de presupuestos por categoriaId
+    // Log detallado de los datos brutos
+    console.log('[Dashboard] Categorías:', categorias.map(c => ({ id: c.id, nombre: c.nombre })));
+    console.log('[Dashboard] Movimientos del mes:', movimientosMes.map(m => ({ 
+      categoriaId: m.categoriaId, 
+      categoriaNombre: m.categoria?.nombre, 
+      valor: m.valor, 
+      tipo: m.tipo 
+    })));
+    console.log('[Dashboard] Presupuestos del mes:', presupuestosMes.map(p => ({ 
+      categoriaId: p.categoriaId, 
+      montoLimite: p.montoLimite,
+      categoria: p.categoria?.nombre 
+    })));
+
+    // PASO 1: Crear mapa de presupuestos por categoriaId (solo para categorías de EGRESOS)
     const presupuestosMap = presupuestosMes.reduce((map, presupuesto) => {
-      map[presupuesto.categoriaId] = presupuesto.montoLimite || 0;
+      const categoria = categorias.find(cat => cat.id === presupuesto.categoriaId);
+      console.log(`[Dashboard] Verificando presupuesto categoriaId=${presupuesto.categoriaId}:`, {
+        categoria,
+        categoriaTipo: categoria?.tipo,
+        montoLimite: presupuesto.montoLimite
+      });
+      
+      // Intentar diferentes valores para el tipo
+      if (categoria && (categoria.tipo === 'GASTO' || categoria.tipo === 'EGRESO')) {
+        const categoriaId = presupuesto.categoriaId;
+        const montoPresupuesto = Number(presupuesto.montoLimite) || 0;
+        map[categoriaId] = montoPresupuesto;
+        console.log(`[Dashboard] Presupuesto agregado: ${categoriaId} = ${montoPresupuesto}`);
+      } else {
+        console.log(`[Dashboard] Presupuesto descartado: ${presupuesto.categoriaId}, tipo=${categoria?.tipo}`);
+      }
       return map;
     }, {} as { [key: string]: number });
 
-    console.log('[Dashboard] Mapa de presupuestos:', presupuestosMap);
+    console.log('[Dashboard] Mapa de presupuestos (solo GASTOS):', presupuestosMap);
 
-    // PASO 2: Identificar todas las categorías que tienen movimientos en el mes
+    // PASO 2: Identificar todas las categorías que tienen movimientos en el mes (solo EGRESOS)
     const categoriasConMovimientos = new Set<string>();
     movimientosMes.forEach(movimiento => {
-      categoriasConMovimientos.add(movimiento.categoriaId);
+      // Solo incluir categorías con movimientos de EGRESO
+      if (movimiento.tipo === 'EGRESO') {
+        categoriasConMovimientos.add(movimiento.categoriaId);
+      }
     });
 
-    console.log('[Dashboard] Categorías con movimientos:', Array.from(categoriasConMovimientos));
+    console.log('[Dashboard] Categorías con movimientos de EGRESO:', Array.from(categoriasConMovimientos));
 
     // PASO 3: Crear mapa de ejecutado por categoría
     const ejecutadoPorCategoria = movimientosMes.reduce((map, movimiento) => {
       // Solo sumar egresos para comparación con presupuestos
       if (movimiento.tipo === 'EGRESO') {
-        map[movimiento.categoriaId] = (map[movimiento.categoriaId] || 0) + (movimiento.valor || 0);
+        const categoriaId = movimiento.categoriaId;
+        const valorMovimiento = Number(movimiento.valor) || 0;
+        map[categoriaId] = (map[categoriaId] || 0) + valorMovimiento;
       }
       return map;
     }, {} as { [key: string]: number });
@@ -201,13 +235,22 @@ const DashboardPage: React.FC = () => {
     // 4.1: Primero procesar categorías con movimientos
     categoriasConMovimientos.forEach(categoriaId => {
       const categoria = categorias.find(cat => cat.id === categoriaId);
-      const presupuestado = presupuestosMap[categoriaId] || 0;
-      const ejecutado = ejecutadoPorCategoria[categoriaId] || 0;
+      const presupuestado = Number(presupuestosMap[categoriaId]) || 0;
+      const ejecutado = Number(ejecutadoPorCategoria[categoriaId]) || 0;
+      
+      // Sin operaciones complejas - solo valores básicos
       const diferencia = presupuestado - ejecutado;
-      const porcentajeUtilizado = presupuestado > 0 ? (ejecutado / presupuestado) * 100 : 0;
+      
+      // Porcentaje simple y seguro
+      let porcentajeUtilizado = 0;
+      if (presupuestado > 0) {
+        porcentajeUtilizado = Math.round((ejecutado / presupuestado) * 100);
+      } else if (ejecutado > 0) {
+        porcentajeUtilizado = 100; // Sin presupuesto pero con gastos
+      }
 
       resultado.push({
-        categoria: categoria?.nombre || 'Sin categoría',
+        categoria: categoria?.nombre,
         presupuestado,
         ejecutado,
         diferencia,
@@ -221,11 +264,13 @@ const DashboardPage: React.FC = () => {
     Object.keys(presupuestosMap).forEach(categoriaId => {
       if (!categoriasConMovimientos.has(categoriaId)) {
         const categoria = categorias.find(cat => cat.id === categoriaId);
+        const presupuestado = Number(presupuestosMap[categoriaId]) || 0;
+        
         resultado.push({
-          categoria: categoria?.nombre || 'Sin categoría',
-          presupuestado: presupuestosMap[categoriaId],
+          categoria: categoria?.nombre,
+          presupuestado,
           ejecutado: 0,
-          diferencia: presupuestosMap[categoriaId],
+          diferencia: presupuestado,
           porcentajeUtilizado: 0,
           estado: 'Dentro de presupuesto',
           colorEstado: 'success'
@@ -234,6 +279,23 @@ const DashboardPage: React.FC = () => {
     });
 
     console.log('[Dashboard] Resultado final combinado:', resultado);
+
+    // Verificar que ningún valor sea NaN
+    resultado.forEach((item, index) => {
+      console.log(`[Dashboard] Item ${index}:`, {
+        categoria: item.categoria,
+        presupuestado: item.presupuestado,
+        ejecutado: item.ejecutado,
+        diferencia: item.diferencia,
+        porcentajeUtilizado: item.porcentajeUtilizado,
+        isNaN: {
+          presupuestado: isNaN(item.presupuestado),
+          ejecutado: isNaN(item.ejecutado),
+          diferencia: isNaN(item.diferencia),
+          porcentajeUtilizado: isNaN(item.porcentajeUtilizado)
+        }
+      });
+    });
 
     return resultado;
   };
@@ -519,7 +581,7 @@ const DashboardPage: React.FC = () => {
                       presupuestosData.map((item, index) => (
                         <TableRow key={index}>
                           <TableCell>{item.categoria}</TableCell>
-                          <TableCell align="right">{formatCurrency(item.presupuesto)}</TableCell>
+                          <TableCell align="right">{formatCurrency(item.presupuestado)}</TableCell>
                           <TableCell align="right">{formatCurrency(item.ejecutado)}</TableCell>
                           <TableCell align="right" sx={{ color: item.diferencia >= 0 ? 'success.main' : 'error.main' }}>
                             {item.diferencia >= 0 ? '+' : ''}{formatCurrency(item.diferencia)}
@@ -595,7 +657,7 @@ const DashboardPage: React.FC = () => {
                         </TableCell>
                         <TableCell sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' }, width: '20%' }}>
                           <Typography variant="body2" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}>
-                            {movimiento.categoria?.nombre || 'Sin categoría'}
+                            {movimiento.categoria?.nombre}
                           </Typography>
                         </TableCell>
                         <TableCell align="right" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem' }, width: '20%' }}>
