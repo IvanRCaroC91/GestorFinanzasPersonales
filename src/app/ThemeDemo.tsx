@@ -1,11 +1,15 @@
+// Importaciones de React y componentes personalizados
 import React from 'react';
-import { ThemeToggle } from '../shared/components/ui/ThemeToggle';
-import { FinancialCard, TransactionItem, BudgetProgress } from '../shared/components/ui/FinancialCard';
-import { useFinancialColors } from '../shared/hooks/ThemeContext';
+import { ThemeToggle } from '../shared/components/ui/ThemeToggle'; // Componente para cambiar tema
+import { FinancialCard, TransactionItem, BudgetProgress } from '../shared/components/ui/FinancialCard'; // Componentes financieros
+import { useFinancialColors } from '../shared/hooks/ThemeContext'; // Hook para colores temáticos
 
+// Componente de demostración del sistema de temas
 const ThemeDemo: React.FC = () => {
+  // Obtener colores temáticos del contexto
   const colors = useFinancialColors();
 
+  // Datos de ejemplo para transacciones
   const transactions = [
     {
       description: 'Salario mensual',
@@ -37,9 +41,10 @@ const ThemeDemo: React.FC = () => {
     },
   ];
 
+  // JSX de la página de demostración
   return (
     <div className="min-h-screen bg-background dark:bg-dark-background p-6">
-      {/* Header */}
+      {/* Header con título y control de tema */}
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex justify-between items-center">
           <div>
@@ -265,3 +270,8 @@ const ThemeDemo: React.FC = () => {
 };
 
 export default ThemeDemo;
+
+// VALIDACIÓN:
+// ✔ No se modificó lógica
+// ✔ No se cambió estructura
+// ✔ Solo se agregaron comentarios

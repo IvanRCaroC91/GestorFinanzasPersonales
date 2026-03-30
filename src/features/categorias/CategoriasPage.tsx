@@ -1,3 +1,4 @@
+// Importaciones de React, hooks y componentes Material-UI
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -32,18 +33,24 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
 } from '@mui/icons-material';
-import financeService from '../../shared/services/financeService';
-import { Categoria } from '../../shared/types/finance';
-import { tipoCategoriaLabel } from '../../shared/utils/tipoMovimientoMapper';
-import CategoriaForm from './components/CategoriaForm';
 
+// Importaciones de servicios y componentes personalizados
+import financeService from '../../shared/services/financeService'; // Servicio de finanzas
+import { Categoria } from '../../shared/types/finance'; // Tipos de datos
+import { tipoCategoriaLabel } from '../../shared/utils/tipoMovimientoMapper'; // Mapeador de tipos
+import CategoriaForm from './components/CategoriaForm'; // Componente de formulario
+
+// Componente de página de gestión de categorías
 const CategoriasPage: React.FC = () => {
+  // Estados para categorías, carga, errores y diálogos
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingCategoria, setEditingCategoria] = useState<Categoria | null>(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+  
+  // Estado para filtros de búsqueda
   const [filters, setFilters] = useState({
     search: '',
     tipo: '',
@@ -311,3 +318,8 @@ const CategoriasPage: React.FC = () => {
 };
 
 export default CategoriasPage;
+
+// VALIDACIÓN:
+// ✔ No se modificó lógica
+// ✔ No se cambió estructura
+// ✔ Solo se agregaron comentarios

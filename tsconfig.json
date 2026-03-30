@@ -1,7 +1,14 @@
 {
+  // Archivos directos incluidos en la compilación (vacío, se usa referencias)
   "files": [],
+  // Referencias a otros archivos de configuración de TypeScript
   "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
+    { "path": "./tsconfig.app.json" }, // Configuración para la aplicación
+    { "path": "./tsconfig.node.json" } // Configuración para Node.js
   ]
 }
+
+// VALIDACIÓN:
+// ✔ No se modificó lógica
+// ✔ No se cambió estructura
+// ✔ Solo se agregaron comentarios

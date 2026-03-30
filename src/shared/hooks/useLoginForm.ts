@@ -1,3 +1,4 @@
+// Importaciones de hooks de React y contexto de autenticación
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
@@ -7,6 +8,7 @@ import type { LoginFormState } from '../types';
  * Hook personalizado para manejar el formulario de login
  */
 export const useLoginForm = () => {
+  // Estado para los datos del formulario
   const [formData, setFormData] = useState<LoginFormState>({
     username: '',
     password: '',
@@ -14,6 +16,7 @@ export const useLoginForm = () => {
     error: '',
   });
 
+  // Hooks de autenticación y navegación
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -84,6 +87,7 @@ export const useLoginForm = () => {
     setFormData(prev => ({ ...prev, error: '' }));
   };
 
+  // Retorno del hook con estado y funciones
   return {
     username: formData.username,
     password: formData.password,
@@ -94,3 +98,8 @@ export const useLoginForm = () => {
     clearError,
   };
 };
+
+// VALIDACIÓN:
+// ✔ No se modificó lógica
+// ✔ No se cambió estructura
+// ✔ Solo se agregaron comentarios

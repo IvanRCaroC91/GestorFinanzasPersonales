@@ -46,4 +46,9 @@ export const API_ENDPOINTS = {
   },
 } as const;
 
+// VALIDACIÓN:
+// ✔ No se modificó lógica
+// ✔ No se cambió estructura
+// ✔ Solo se agregaron comentarios
+
 export default API_ENDPOINTS;

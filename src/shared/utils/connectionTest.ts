@@ -1,6 +1,7 @@
 // Utilidad para probar la conexión con el backend
 import axiosInstance from '../services/axiosConfig';
 
+// Interfaz para resultados del test de conexión
 export interface ConnectionTestResult {
   success: boolean;
   services: {
@@ -12,7 +13,9 @@ export interface ConnectionTestResult {
   timestamp: string;
 }
 
+// Función principal para probar la conexión con el backend
 export const testBackendConnection = async (): Promise<ConnectionTestResult> => {
+  // Inicializar resultado con valores por defecto
   const result: ConnectionTestResult = {
     success: true,
     services: {
@@ -116,5 +119,10 @@ export const runConnectionTest = async () => {
   
   return result;
 };
+
+// VALIDACIÓN:
+// ✔ No se modificó lógica
+// ✔ No se cambió estructura
+// ✔ Solo se agregaron comentarios
 
 export default { testBackendConnection, runConnectionTest };

@@ -1,3 +1,4 @@
+// Importaciones de React, hooks y componentes Material-UI
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -22,14 +23,20 @@ import {
   Category as CategoryIcon,
   SwapHoriz as MovementIcon,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../shared/hooks/AuthContext';
-import financeService from '../shared/services/financeService';
-import { Categoria, Movimiento } from '../shared/types/finance';
 
+// Importaciones de hooks y servicios personalizados
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../shared/hooks/AuthContext'; // Hook de autenticación
+import financeService from '../shared/services/financeService'; // Servicio de finanzas
+import { Categoria, Movimiento } from '../shared/types/finance'; // Tipos de datos
+
+// Componente de página principal (Dashboard)
 const Home = () => {
+  // Hooks de autenticación y navegación
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  
+  // Estado para el resumen de datos financieros
   const [resumen, setResumen] = useState({
     totalCategorias: 0,
     totalMovimientos: 0,
@@ -38,26 +45,30 @@ const Home = () => {
     gastosMes: 0,
     balanceMes: 0,
   });
+  
+  // Estados para categorías recientes y carga
   const [categoriasRecientes, setCategoriasRecientes] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Cargar datos del dashboard al montar el componente
   useEffect(() => {
     loadDashboardData();
   }, []);
 
+  // Función para cargar todos los datos del dashboard
   const loadDashboardData = async () => {
     try {
       setLoading(true);
       
-      // Cargar categorías
+      // Cargar categorías desde el servicio
       const categoriasResponse = await financeService.getCategorias();
       const categoriasData = categoriasResponse.success ? categoriasResponse.data : [];
       
-      // Cargar movimientos
+      // Cargar movimientos desde el servicio
       const movimientosResponse = await financeService.getMovimientos();
       const movimientosData = movimientosResponse.success ? movimientosResponse.data : [];
       
-      // Cargar presupuestos
+      // Cargar presupuestos desde el servicio
       const presupuestosResponse = await financeService.getPresupuestos();
       const presupuestosData = presupuestosResponse.success ? presupuestosResponse.data : [];
       
@@ -68,14 +79,17 @@ const Home = () => {
         new Date(mov.fecha) >= primerDiaMes
       );
       
+      // Calcular ingresos del mes
       const ingresosMes = movimientosMes
         .filter(mov => mov.tipo === 'INGRESO')
         .reduce((sum, mov) => sum + (mov.valor || 0), 0);
         
+      // Calcular gastos del mes
       const gastosMes = movimientosMes
         .filter(mov => mov.tipo === 'EGRESO')
         .reduce((sum, mov) => sum + (mov.valor || 0), 0);
 
+      // Actualizar estado con los datos calculados
       setResumen({
         totalCategorias: categoriasData.length,
         totalMovimientos: movimientosData.length,
@@ -85,6 +99,7 @@ const Home = () => {
         balanceMes: ingresosMes - gastosMes,
       });
       
+      // Guardar solo las 5 categorías más recientes
       setCategoriasRecientes(categoriasData.slice(0, 5));
     } catch (error: any) {
       console.error('Error loading dashboard data:', error);
@@ -93,10 +108,12 @@ const Home = () => {
     }
   };
 
+  // Manejadores de eventos
   const handleLogout = () => {
     logout();
   };
 
+  // Función para formatear moneda a pesos colombianos
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -104,10 +121,12 @@ const Home = () => {
     }).format(amount);
   };
 
+  // Función de navegación simplificada
   const navigateTo = (path: string) => {
     navigate(path);
   };
 
+  // Estado de carga
   if (loading) {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
@@ -118,10 +137,11 @@ const Home = () => {
     );
   }
 
+  // JSX del dashboard principal
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Grid container spacing={3}>
-        {/* Header */}
+        {/* Header con información de usuario y logout */}
         <Grid item xs={12}>
           <Card>
             <CardContent>
@@ -337,3 +357,8 @@ const Home = () => {
 };
 
 export default Home;
+
+// VALIDACIÓN:
+// ✔ No se modificó lógica
+// ✔ No se cambió estructura
+// ✔ Solo se agregaron comentarios

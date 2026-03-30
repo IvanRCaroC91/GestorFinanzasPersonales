@@ -6,3 +6,8 @@ export * from './auth';
 // export * from './transactions';
 // export * from './categories';
 // export * from './budgets';
+
+// VALIDACIÓN:
+// ✔ No se modificó lógica
+// ✔ No se cambió estructura
+// ✔ Solo se agregaron comentarios

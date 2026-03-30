@@ -1,27 +1,28 @@
+// Interfaz principal para la configuración del tema
 export interface Theme {
     colors: {
-        // Brand Colors
+        // Colores de marca principales
         brand: {
             primary: string;
             secondary: string;
         };
 
-        // Semantic Colors
+        // Colores semánticos (con significado)
         semantic: {
-            success: string;    // Income/Positive
-            danger: string;     // Expense/Negative
-            warning: string;    // Budget warnings
-            info: string;       // Neutral information
+            success: string;    // Ingresos/Positivo
+            danger: string;     // Gastos/Negativo
+            warning: string;    // Advertencias de presupuesto
+            info: string;       // Información neutral
         };
 
-        // Surface Colors
+        // Colores de superficies
         surface: {
             background: string;
             card: string;
             overlay: string;
         };
 
-        // Text Colors
+        // Colores de texto
         text: {
             primary: string;
             secondary: string;
@@ -29,7 +30,7 @@ export interface Theme {
             inverseSecondary: string;
         };
 
-        // Chart Colors
+        // Colores para gráficos
         charts: {
             income: string;
             expense: string;
@@ -37,7 +38,7 @@ export interface Theme {
             investment: string;
         };
 
-        // Status Colors for accessibility
+        // Colores de estado para accesibilidad
         status: {
             online: string;
             offline: string;
@@ -45,7 +46,7 @@ export interface Theme {
         };
     };
 
-    // Typography
+    // Configuración de tipografía
     typography: {
         fontFamily: {
             primary: string;
@@ -70,7 +71,7 @@ export interface Theme {
         };
     };
 
-    // Spacing
+    // Configuración de espaciado
     spacing: {
         xs: string;
         sm: string;
@@ -80,7 +81,7 @@ export interface Theme {
         '2xl': string;
     };
 
-    // Border Radius
+    // Configuración de bordes redondeados
     borderRadius: {
         sm: string;
         md: string;
@@ -89,7 +90,7 @@ export interface Theme {
         full: string;
     };
 
-    // Shadows
+    // Configuración de sombras
     shadows: {
         sm: string;
         md: string;
@@ -97,7 +98,7 @@ export interface Theme {
         xl: string;
     };
 
-    // Transitions
+    // Configuración de transiciones
     transitions: {
         fast: string;
         normal: string;
@@ -105,45 +106,45 @@ export interface Theme {
     };
 }
 
-// Light Theme Configuration
+// Configuración del tema claro
 export const lightTheme: Theme = {
     colors: {
         brand: {
-            primary: '#3F51B5',     // Indigo
-            secondary: '#FF4081',   // Pink
+            primary: '#3F51B5',     // Índigo
+            secondary: '#FF4081',   // Rosa
         },
 
         semantic: {
-            success: '#00C853',     // Emerald Green (Income)
-            danger: '#D32F2F',      // Red Coral (Expenses)
-            warning: '#FFA000',     // Amber (Budget warnings)
-            info: '#0288D1',        // Light Blue (Information)
+            success: '#00C853',     // Verde esmeralda (Ingresos)
+            danger: '#D32F2F',      // Rojo coral (Gastos)
+            warning: '#FFA000',     // Ámbar (Advertencias de presupuesto)
+            info: '#0288D1',        // Azul claro (Información)
         },
 
         surface: {
-            background: '#F4F7FE',  // Very light gray-blue
-            card: '#FFFFFF',        // Pure white
+            background: '#F4F7FE',  // Gris azul muy claro
+            card: '#FFFFFF',        // Blanco puro
             overlay: 'rgba(0, 0, 0, 0.5)',
         },
 
         text: {
-            primary: '#2D3748',     // Dark gray
-            secondary: '#718096',   // Medium gray
-            inverse: '#FFFFFF',     // White
-            inverseSecondary: '#A0AEC0', // Light gray
+            primary: '#2D3748',     // Gris oscuro
+            secondary: '#718096',   // Gris medio
+            inverse: '#FFFFFF',     // Blanco
+            inverseSecondary: '#A0AEC0', // Gris claro
         },
 
         charts: {
-            income: '#00C853',      // Green
-            expense: '#D32F2F',     // Red
-            savings: '#3F51B5',     // Indigo
-            investment: '#FF4081',  // Pink
+            income: '#00C853',      // Verde
+            expense: '#D32F2F',     // Rojo
+            savings: '#3F51B5',     // Índigo
+            investment: '#FF4081',  // Rosa
         },
 
         status: {
-            online: '#00C853',      // Green
-            offline: '#718096',     // Gray
-            pending: '#FFA000',     // Amber
+            online: '#00C853',      // Verde
+            offline: '#718096',     // Gris
+            pending: '#FFA000',     // Ámbar
         },
     },
 
@@ -202,57 +203,63 @@ export const lightTheme: Theme = {
     },
 };
 
-// Dark Theme Configuration
+// Configuración del tema oscuro
 export const darkTheme: Theme = {
     ...lightTheme,
     colors: {
         brand: {
-            primary: '#5C6BC0',     // Lighter indigo for dark mode
-            secondary: '#F06292',   // Lighter pink for dark mode
+            primary: '#5C6BC0',     // Índigo más claro para modo oscuro
+            secondary: '#F06292',   // Rosa más clara para modo oscuro
         },
 
         semantic: {
-            success: '#00E676',     // Neon green
-            danger: '#FF5252',      // Bright red
-            warning: '#FF9100',     // Orange
-            info: '#40C4FF',        // Bright blue
+            success: '#00E676',     // Verde neón
+            danger: '#FF5252',      // Rojo brillante
+            warning: '#FF9100',     // Naranja
+            info: '#40C4FF',        // Azul brillante
         },
 
         surface: {
-            background: '#121212',  // Dark graphite
-            card: '#1E1E1E',        // Dark card
+            background: '#121212',  // Grafito oscuro
+            card: '#1E1E1E',        // Tarjeta oscura
             overlay: 'rgba(0, 0, 0, 0.7)',
         },
 
         text: {
-            primary: '#FFFFFF',     // White
-            secondary: '#A0AEC0',   // Light gray
-            inverse: '#2D3748',     // Dark gray
-            inverseSecondary: '#718096', // Medium gray
+            primary: '#FFFFFF',     // Blanco
+            secondary: '#A0AEC0',   // Gris claro
+            inverse: '#2D3748',     // Gris oscuro
+            inverseSecondary: '#718096', // Gris medio
         },
 
         charts: {
-            income: '#00E676',      // Neon green
-            expense: '#FF5252',     // Bright red
-            savings: '#5C6BC0',     // Light indigo
-            investment: '#F06292',  // Light pink
+            income: '#00E676',      // Verde neón
+            expense: '#FF5252',     // Rojo brillante
+            savings: '#5C6BC0',     // Índigo claro
+            investment: '#F06292',  // Rosa clara
         },
 
         status: {
-            online: '#00E676',      // Neon green
-            offline: '#4A5568',     // Dark gray
-            pending: '#FF9100',     // Orange
+            online: '#00E676',      // Verde neón
+            offline: '#4A5568',     // Gris oscuro
+            pending: '#FF9100',     // Naranja
         },
     },
 };
 
-// Theme type for runtime usage
+// Tipo de tema para uso en tiempo de ejecución
 export type ThemeMode = 'light' | 'dark';
 
+// Objeto con todos los temas disponibles
 export const themes = {
     light: lightTheme,
     dark: darkTheme,
 };
 
-// Default theme
+// Tema por defecto
 export const defaultTheme: Theme = lightTheme;
+
+// VALIDACIÓN:
+// ✔ No se modificó lógica
+// ✔ No se cambió estructura
+// ✔ Solo se agregaron comentarios

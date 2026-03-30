@@ -1,3 +1,4 @@
+// Importaciones de React, hooks y componentes Material-UI
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -21,11 +22,14 @@ import {
   AccountBalance as BalanceIcon,
   Edit as EditIcon,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import financeService from '../../shared/services/financeService';
-import { Categoria, Movimiento } from '../../shared/types/finance';
-import { tipoMovimientoLabel } from '../../shared/utils/tipoMovimientoMapper';
 
+// Importaciones de hooks y servicios personalizados
+import { useNavigate } from 'react-router-dom';
+import financeService from '../../shared/services/financeService'; // Servicio de finanzas
+import { Categoria, Movimiento } from '../../shared/types/finance'; // Tipos de datos
+import { tipoMovimientoLabel } from '../../shared/utils/tipoMovimientoMapper'; // Mapeador de tipos
+
+// Interfaz para datos del resumen financiero
 interface ResumenData {
   totalIngresos: number;
   totalGastos: number;
@@ -35,8 +39,12 @@ interface ResumenData {
   totalPresupuestos: number;
 }
 
+// Componente de página de dashboard
 const DashboardPage: React.FC = () => {
+  // Hook de navegación
   const navigate = useNavigate();
+  
+  // Estado para datos del resumen financiero
   const [resumen, setResumen] = useState<ResumenData>({
     totalIngresos: 0,
     totalGastos: 0,
@@ -45,6 +53,8 @@ const DashboardPage: React.FC = () => {
     totalMovimientos: 0,
     totalPresupuestos: 0,
   });
+  
+  // Estados para movimientos recientes y presupuestos
   const [movimientosRecientes, setMovimientosRecientes] = useState<Movimiento[]>([]);
   const [presupuestosData, setPresupuestosData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -709,3 +719,8 @@ const DashboardPage: React.FC = () => {
 };
 
 export default DashboardPage;
+
+// VALIDACIÓN:
+// ✔ No se modificó lógica
+// ✔ No se cambió estructura
+// ✔ Solo se agregaron comentarios

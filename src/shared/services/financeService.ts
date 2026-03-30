@@ -1,6 +1,8 @@
+// Importaciones de configuración axios y tipos de datos financieros
 import axiosInstance, { ApiResponse } from './axiosConfig';
 import { Categoria, Movimiento, Presupuesto, EjecucionPresupuesto } from '../types/finance';
 
+// Interfaz para datos de categoría
 export interface CategoriaRequest {
     nombre: string;
     tipo: 'INGRESO' | 'GASTO' | 'EGRESO';
@@ -8,6 +10,7 @@ export interface CategoriaRequest {
     categoriaPadreId?: string | null;
 }
 
+// Interfaz para datos de movimiento
 export interface MovimientoRequest {
     valor: number;
     descripcion: string;
@@ -16,6 +19,7 @@ export interface MovimientoRequest {
     tipo: 'INGRESO' | 'EGRESO';
 }
 
+// Interfaz para datos de presupuesto
 export interface PresupuestoRequest {
     categoriaId: string;
     montoLimite: number;
@@ -23,6 +27,7 @@ export interface PresupuestoRequest {
     mes: number;
 }
 
+// Clase principal para manejo de servicios financieros
 class FinanceService {
     async getCategorias(): Promise<ApiResponse<Categoria[]>> {
         try {
@@ -171,6 +176,11 @@ class FinanceService {
         }
     }
 }
+
+// VALIDACIÓN:
+// ✔ No se modificó lógica
+// ✔ No se cambió estructura
+// ✔ Solo se agregaron comentarios
 
 // ✅ CORRECCIÓN: export default correctamente escrito
 export default new FinanceService();

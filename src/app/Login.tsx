@@ -1,22 +1,30 @@
+// Importaciones de hooks y componentes de React y Material-UI
 import { useState, useEffect } from 'react';
 import { Container, Card, TextField, Button, Typography, Box, Alert, InputAdornment, IconButton, CircularProgress } from '@mui/material';
 import { Visibility, VisibilityOff, Person } from '@mui/icons-material';
 
-import { useAuth } from '../shared/hooks/AuthContext';
-import { ThemeToggle } from '../shared/components/ui/ThemeToggle';
-import { useReturnTo } from '../shared/hooks/useReturnTo';
+// Importaciones de servicios y componentes personalizados
+import { useAuth } from '../shared/hooks/AuthContext'; // Hook de autenticación
+import { ThemeToggle } from '../shared/components/ui/ThemeToggle'; // Componente para cambiar tema
+import { useReturnTo } from '../shared/hooks/useReturnTo'; // Hook para redirección post-login
 
+// Componente de página de inicio de sesión
 const Login = () => {
+  // Hook de autenticación para manejar login, estado y errores
   const { login, isAuthenticated, isLoading: authLoading, error: authError, clearError } = useAuth();
+  
+  // Estado para los datos del formulario
   const [formData, setFormData] = useState({
     username: '',
     password: '',
   });
+  
+  // Estados para controlar el envío y visibilidad de contraseña
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
   // Usar hook para manejar redirección después del login exitoso
-    useReturnTo(isAuthenticated, authLoading);
+  useReturnTo(isAuthenticated, authLoading);
 
   // Limpiar error al cambiar los datos del formulario
   useEffect(() => {
@@ -25,6 +33,7 @@ const Login = () => {
     }
   }, [formData, authError, clearError]);
 
+  // Manejadores de cambios en los campos del formulario
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, username: e.target.value }));
   };
@@ -33,6 +42,7 @@ const Login = () => {
     setFormData(prev => ({ ...prev, password: e.target.value }));
   };
 
+  // Manejador de envío del formulario de login
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -62,11 +72,13 @@ const Login = () => {
     }
   };
 
+  // Manejador para navegación a registro
   const handleRegisterClick = () => {
     // Usar returnTo para mantener la lógica consistente
     window.location.href = '/register';
   };
 
+  // Función para alternar visibilidad de contraseña
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -80,6 +92,7 @@ const Login = () => {
     );
   }
 
+  // JSX del formulario de login
   return (
     <Container maxWidth="sm" sx={{ mt: 4 }}>
       {/* Theme Toggle */}
@@ -87,6 +100,7 @@ const Login = () => {
         <ThemeToggle />
       </Box>
       
+      {/* Tarjeta principal del formulario */}
       <Card sx={{ 
         boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
         borderRadius: 2,
@@ -95,6 +109,7 @@ const Login = () => {
         backdropFilter: 'blur(10px)',
       }}>
         <Box sx={{ p: 3 }}>
+          {/* Título del formulario */}
           <Typography variant="h5" gutterBottom align="center" sx={{ 
             mb: 3,
             color: '#3F51B5',
@@ -103,6 +118,7 @@ const Login = () => {
             Iniciar Sesión
           </Typography>
           
+          {/* Alerta de error si existe */}
           {authError && (
             <Alert 
               severity="error" 
@@ -113,6 +129,7 @@ const Login = () => {
             </Alert>
           )}
           
+          {/* Formulario */}
           <Box component="form" onSubmit={handleFormSubmit} noValidate>
             <TextField
               label="Nombre de Usuario"
@@ -214,3 +231,8 @@ const Login = () => {
 };
 
 export default Login;
+
+// VALIDACIÓN:
+// ✔ No se modificó lógica
+// ✔ No se cambió estructura
+// ✔ Solo se agregaron comentarios

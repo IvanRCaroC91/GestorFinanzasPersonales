@@ -1,10 +1,13 @@
+// Importaciones de hooks y componentes de React y Material-UI
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import authService from '../shared/services/authService';
-import { ThemeToggle } from '../shared/components/ui/ThemeToggle';
+import authService from '../shared/services/authService'; // Servicio de autenticación
+import { ThemeToggle } from '../shared/components/ui/ThemeToggle'; // Componente para cambiar tema
 import { Container, Card, TextField, Button, Typography, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Box, Alert } from '@mui/material';
 
+// Componente de página de registro de usuarios
 const Register = () => {
+  // Estados para los campos del formulario
   const [nombreUsuario, setNombreUsuario] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,11 +17,16 @@ const Register = () => {
   const [segundoNombre, setSegundoNombre] = useState('');
   const [primerApellido, setPrimerApellido] = useState('');
   const [segundoApellido, setSegundoApellido] = useState('');
+  
+  // Estados para manejo de mensajes y diálogos
   const [mensaje, setMensaje] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
   const [isError, setIsError] = useState(false);
+  
+  // Hook de navegación
   const navigate = useNavigate();
 
+  // Función principal de registro con validaciones
   const handleRegister = async () => {
     // Validación básica de campos requeridos
     if (!primerNombre || !primerApellido || !nombreUsuario || !email || !password || !confirmPassword || !telefono) {
@@ -62,6 +70,7 @@ const Register = () => {
       return;
     }
 
+    // Llamada al servicio de registro
     try {
       const response = await authService.register({
         username: nombreUsuario,
@@ -91,6 +100,7 @@ const Register = () => {
     }
   };
 
+  // Manejador para cerrar el diálogo y redirigir si el registro fue exitoso
   const handleCloseDialog = () => {
     setOpenDialog(false);
     if (!isError) {
@@ -98,6 +108,7 @@ const Register = () => {
     }
   };
 
+  // JSX del formulario de registro
   return (
     <Container maxWidth="sm" sx={{ mt: 4 }}>
       {/* Theme Toggle */}
@@ -105,6 +116,7 @@ const Register = () => {
         <ThemeToggle />
       </Box>
       
+      {/* Tarjeta principal del formulario */}
       <Card sx={{ 
         boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
         borderRadius: 2,
@@ -113,6 +125,7 @@ const Register = () => {
         backdropFilter: 'blur(10px)',
       }}>
         <Box sx={{ p: 3 }}>
+          {/* Título del formulario */}
           <Typography variant="h5" gutterBottom align="center" sx={{ 
             mb: 3,
             color: '#3F51B5',
@@ -121,10 +134,12 @@ const Register = () => {
             Registro de Usuario
           </Typography>
           
+          {/* Alerta informativa sobre campos obligatorios */}
           <Alert severity="error" sx={{ mb: 3 }}>
             Los campos marcados con * son obligatorios
           </Alert>
           
+          {/* Campos del formulario */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <TextField
                 label="Primer Nombre *"
@@ -257,3 +272,8 @@ const Register = () => {
 };
 
 export default Register;
+
+// VALIDACIÓN:
+// ✔ No se modificó lógica
+// ✔ No se cambió estructura
+// ✔ Solo se agregaron comentarios

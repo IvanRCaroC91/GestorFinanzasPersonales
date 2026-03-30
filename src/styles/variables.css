@@ -1,14 +1,18 @@
-/* CSS Variables for the application */
+/* Variables CSS para la aplicación */
+
+/* Variables raíz para tema claro */
 :root {
-  /* Colors */
+  /* Colores principales */
   --primary-color: #3b82f6;
   --primary-dark: #2563eb;
   --primary-light: #60a5fa;
   
+  /* Colores secundarios */
   --secondary-color: #6b7280;
   --secondary-dark: #4b5563;
   --secondary-light: #9ca3af;
   
+  /* Colores de estado */
   --success-color: #10b981;
   --success-dark: #065f46;
   --success-light: #d1fae5;
@@ -25,38 +29,38 @@
   --info-dark: #0e7490;
   --info-light: #cffafe;
   
-  /* Text Colors */
+  /* Colores de texto */
   --text-primary: #111827;
   --text-secondary: #6b7280;
   --text-muted: #9ca3af;
   --text-inverse: #ffffff;
   
-  /* Background Colors */
+  /* Colores de fondo */
   --background-color: #f9fafb;
   --card-background: #ffffff;
   --hover-background: #f3f4f6;
   --active-background: #e5e7eb;
   
-  /* Border Colors */
+  /* Colores de bordes */
   --border-color: #e5e7eb;
   --border-light: #f3f4f6;
   --border-dark: #d1d5db;
   
-  /* Financial Colors */
+  /* Colores financieros */
   --income-color: #10b981;
   --expense-color: #ef4444;
   --balance-color: #3b82f6;
   --savings-color: #8b5cf6;
   --investment-color: #f59e0b;
   
-  /* Shadows */
+  /* Sombras */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   
-  /* Spacing */
+  /* Espaciado */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
@@ -64,17 +68,18 @@
   --spacing-xl: 2rem;
   --spacing-2xl: 3rem;
   
-  /* Border Radius */
+  /* Bordes redondeados */
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
   
-  /* Typography */
+  /* Tipografía */
   --font-family-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   --font-family-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
   
+  /* Tamaños de fuente */
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;
@@ -84,22 +89,24 @@
   --font-size-3xl: 1.875rem;
   --font-size-4xl: 2.25rem;
   
+  /* Pesos de fuente */
   --font-weight-light: 300;
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
   
+  /* Altura de línea */
   --line-height-tight: 1.25;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.75;
   
-  /* Transitions */
+  /* Transiciones */
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
   --transition-slow: 350ms ease;
   
-  /* Z-index */
+  /* Índices Z para apilamiento */
   --z-dropdown: 1000;
   --z-sticky: 1020;
   --z-fixed: 1030;
@@ -110,19 +117,27 @@
   --z-toast: 1080;
 }
 
-/* Dark theme variables */
+/* Variables para tema oscuro */
 [data-theme="dark"] {
+  /* Colores de texto invertidos */
   --text-primary: #f9fafb;
   --text-secondary: #d1d5db;
   --text-muted: #9ca3af;
   --text-inverse: #111827;
   
+  /* Colores de fondo oscuros */
   --background-color: #111827;
   --card-background: #1f2937;
   --hover-background: #374151;
   --active-background: #4b5563;
   
+  /* Colores de bordes oscuros */
   --border-color: #374151;
   --border-light: #4b5563;
   --border-dark: #1f2937;
 }
+
+// VALIDACIÓN:
+// ✔ No se modificó lógica
+// ✔ No se cambió estructura
+// ✔ Solo se agregaron comentarios

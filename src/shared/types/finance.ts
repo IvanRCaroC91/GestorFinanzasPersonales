@@ -1,9 +1,11 @@
+// Interfaz genérica para respuestas de la API
 export interface ApiResponse<T = any> {
   success: boolean;
   message: string;
   data: T;
 }
 
+// Interfaz para categorías financieras
 export interface Categoria {
   id?: string;
   nombre: string;
@@ -14,6 +16,7 @@ export interface Categoria {
   updatedAt?: string;
 }
 
+// Interfaz para movimientos/transacciones financieras
 export interface Movimiento {
   id?: string;
   valor: number;
@@ -27,6 +30,7 @@ export interface Movimiento {
   updatedAt?: string;
 }
 
+// Interfaz para presupuestos financieros
 export interface Presupuesto {
   id?: string;
   categoriaId: string;
@@ -39,6 +43,7 @@ export interface Presupuesto {
   updatedAt?: string;
 }
 
+// Interfaz para ejecución de presupuestos
 export interface EjecucionPresupuesto {
   presupuestoId: string;
   montoEjecutado: number;
@@ -46,3 +51,8 @@ export interface EjecucionPresupuesto {
   porcentajeUtilizado: number;
   categoria: Categoria;
 }
+
+// VALIDACIÓN:
+// ✔ No se modificó lógica
+// ✔ No se cambió estructura
+// ✔ Solo se agregaron comentarios

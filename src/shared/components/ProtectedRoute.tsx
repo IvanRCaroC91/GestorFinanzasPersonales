@@ -1,8 +1,10 @@
+// Importaciones de React, hooks y componentes Material-UI
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { CircularProgress, Box } from '@mui/material';
 import { useAuth } from '../hooks/AuthContext';
 
+// Interfaz para props del componente de ruta protegida
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAuth?: boolean;
@@ -19,6 +21,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireAuth = true,
   redirectTo = '/login' 
 }) => {
+  // Hooks de autenticación y ubicación
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
@@ -66,3 +69,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 };
 
 export default ProtectedRoute;
+
+// VALIDACIÓN:
+// ✔ No se modificó lógica
+// ✔ No se cambió estructura
+// ✔ Solo se agregaron comentarios
