@@ -33,6 +33,8 @@ class AuthService {
     private readonly USER_KEY = 'user';
     private readonly USER_ID_KEY = 'userId';
 
+    // Autentica al usuario con credenciales y obtiene token JWT del backend.
+    // Almacena token y datos de usuario para mantener sesión activa.
     async login(credentials: LoginRequest): Promise<LoginResponse> {
         try {
             console.log('[AuthService] Attempting login...');

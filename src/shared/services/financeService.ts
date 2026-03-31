@@ -29,7 +29,9 @@ export interface PresupuestoRequest {
 
 // Clase principal para manejo de servicios financieros
 class FinanceService {
-    async getCategorias(): Promise<ApiResponse<Categoria[]>> {
+    // Obtiene todas las categorías financieras desde el backend.
+  // Retorna lista de categorías para usar en formularios y filtros.
+  async getCategorias(): Promise<ApiResponse<Categoria[]>> {
         try {
             const response = await axiosInstance.get<ApiResponse<Categoria[]>>('/finance/categorias');
             return response.data;
@@ -39,7 +41,9 @@ class FinanceService {
         }
     }
 
-    async createCategoria(data: CategoriaRequest): Promise<ApiResponse<Categoria>> {
+    // Crea una nueva categoría en el backend con los datos proporcionados.
+  // Retorna la categoría creada con su ID asignado por el servidor.
+  async createCategoria(data: CategoriaRequest): Promise<ApiResponse<Categoria>> {
         try {
             const response = await axiosInstance.post<ApiResponse<Categoria>>('/finance/categorias', data);
             return response.data;
@@ -69,7 +73,8 @@ class FinanceService {
         }
     }
 
-    // Métodos para Movimientos
+    // Obtiene todos los movimientos financieros del usuario desde el backend.
+    // Retorna lista completa de transacciones para mostrar en dashboard y listados.
     async getMovimientos(): Promise<ApiResponse<Movimiento[]>> {
         try {
             const response = await axiosInstance.get<ApiResponse<Movimiento[]>>('/finance/movimientos');
@@ -80,6 +85,8 @@ class FinanceService {
         }
     }
 
+    // Crea un nuevo movimiento financiero en el backend con los datos proporcionados.
+    // Registra la transacción y la asocia al usuario autenticado.
     async createMovimiento(data: MovimientoRequest): Promise<ApiResponse<Movimiento>> {
         try {
             console.log('[FinanceService] Creating movimiento with data:', data);
@@ -177,10 +184,4 @@ class FinanceService {
     }
 }
 
-// VALIDACIÓN:
-// ✔ No se modificó lógica
-// ✔ No se cambió estructura
-// ✔ Solo se agregaron comentarios
-
-// ✅ CORRECCIÓN: export default correctamente escrito
 export default new FinanceService();

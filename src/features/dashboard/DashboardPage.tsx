@@ -65,6 +65,8 @@ const DashboardPage: React.FC = () => {
     })();
   }, []);
 
+  // Carga todos los datos del dashboard desde el backend (movimientos, categorías, presupuestos).
+  // Procesa los datos para calcular resúmenes y preparar la visualización.
   const loadDashboardData = async () => {
     try {
       setLoading(true);
@@ -157,6 +159,8 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  // Compara los presupuestos mensuales con los gastos reales ejecutados por categoría.
+  // Calcula la diferencia y porcentaje de uso para mostrar el estado de cumplimiento.
   const calcularPresupuestoVsEjecutado = (presupuestos: any[], movimientos: Movimiento[], categorias: Categoria[]) => {
     const fechaActual = new Date();
     const primerDiaMes = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), 1);
@@ -720,7 +724,3 @@ const DashboardPage: React.FC = () => {
 
 export default DashboardPage;
 
-// VALIDACIÓN:
-// ✔ No se modificó lógica
-// ✔ No se cambió estructura
-// ✔ Solo se agregaron comentarios

@@ -54,6 +54,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         });
     }, [updateState]);
 
+    // Procesa el formulario de login y autentica al usuario con el backend.
+    // Actualiza el estado global con los datos del usuario si el login es exitoso.
     const login = useCallback(async (credentials: { username: string; password: string }) => {
         try {
             updateState({ isLoading: true, error: null });
