@@ -1,0 +1,138 @@
+/* Variables CSS para la aplicación */
+
+/* Variables raíz para tema claro */
+:root {
+  /* Colores principales */
+  --primary-color: #3b82f6;
+  --primary-dark: #2563eb;
+  --primary-light: #60a5fa;
+  
+  /* Colores secundarios */
+  --secondary-color: #6b7280;
+  --secondary-dark: #4b5563;
+  --secondary-light: #9ca3af;
+  
+  /* Colores de estado */
+  --success-color: #10b981;
+  --success-dark: #065f46;
+  --success-light: #d1fae5;
+  
+  --warning-color: #f59e0b;
+  --warning-dark: #92400e;
+  --warning-light: #fef3c7;
+  
+  --error-color: #ef4444;
+  --error-dark: #991b1b;
+  --error-light: #fee2e2;
+  
+  --info-color: #06b6d4;
+  --info-dark: #0e7490;
+  --info-light: #cffafe;
+  
+  /* Colores de texto */
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --text-inverse: #ffffff;
+  
+  /* Colores de fondo */
+  --background-color: #f9fafb;
+  --card-background: #ffffff;
+  --hover-background: #f3f4f6;
+  --active-background: #e5e7eb;
+  
+  /* Colores de bordes */
+  --border-color: #e5e7eb;
+  --border-light: #f3f4f6;
+  --border-dark: #d1d5db;
+  
+  /* Colores financieros */
+  --income-color: #10b981;
+  --expense-color: #ef4444;
+  --balance-color: #3b82f6;
+  --savings-color: #8b5cf6;
+  --investment-color: #f59e0b;
+  
+  /* Sombras */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* Espaciado */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  
+  /* Bordes redondeados */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  
+  /* Tipografía */
+  --font-family-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-family-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  
+  /* Tamaños de fuente */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  
+  /* Pesos de fuente */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Altura de línea */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  
+  /* Transiciones */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+  
+  /* Índices Z para apilamiento */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+}
+
+/* Variables para tema oscuro */
+[data-theme="dark"] {
+  /* Colores de texto invertidos */
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  --text-inverse: #111827;
+  
+  /* Colores de fondo oscuros */
+  --background-color: #111827;
+  --card-background: #1f2937;
+  --hover-background: #374151;
+  --active-background: #4b5563;
+  
+  /* Colores de bordes oscuros */
+  --border-color: #374151;
+  --border-light: #4b5563;
+  --border-dark: #1f2937;
+}

@@ -1,28 +1,49 @@
 {
+  // Opciones del compilador TypeScript para la aplicación
   "compilerOptions": {
+    // Archivo para información de compilación incremental
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    // Versión de JavaScript objetivo para la compilación
     "target": "ES2022",
+    // Usa la sintaxis de campos de clase moderna
     "useDefineForClassFields": true,
+    // Bibliotecas incluidas para el compilador
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    // Sistema de módulos a utilizar
     "module": "ESNext",
+    // Tipos adicionales para Vite
     "types": ["vite/client"],
+    // Omite la verificación de tipos en archivos de declaración
     "skipLibCheck": true,
 
-    /* Bundler mode */
+    /* Modo bundler */
+    // Resolución de módulos para bundlers modernos
     "moduleResolution": "bundler",
+    // Permite importar archivos con extensión .ts
     "allowImportingTsExtensions": true,
+    // Mantiene la sintaxis de módulos original
     "verbatimModuleSyntax": false,
+    // Fuerza la detección de módulos
     "moduleDetection": "force",
+    // No genera archivos de salida (Vite se encarga)
     "noEmit": true,
+    // Transformación JSX para React moderno
     "jsx": "react-jsx",
 
-    /* Linting */
+    /* Reglas de linting */
+    // Activa todas las verificaciones estrictas de TypeScript
     "strict": true,
+    // Advierte sobre variables locales no utilizadas
     "noUnusedLocals": true,
+    // Advierte sobre parámetros no utilizados
     "noUnusedParameters": true,
+    // Permite sintaxis que puede ser eliminada
     "erasableSyntaxOnly": true,
+    // Previene casos fall-through en switch
     "noFallthroughCasesInSwitch": true,
+    // Verifica efectos secundarios en imports
     "noUncheckedSideEffectImports": true
   },
+  // Archivos incluidos en la compilación
   "include": ["src"]
 }

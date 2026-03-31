@@ -1,0 +1,272 @@
+/* Presupuestos Feature Styles */
+.presupuestosContainer {
+  padding: 24px;
+  background-color: var(--background-color, #f5f5f5);
+  min-height: 100vh;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.pageTitle {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text-primary, #333);
+}
+
+.headerButtons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.testButton {
+  border-color: var(--primary-color, #3b82f6);
+  color: var(--primary-color, #3b82f6);
+}
+
+.testButton:hover {
+  background-color: var(--primary-light, #dbeafe);
+}
+
+.addButton {
+  background-color: var(--primary-color, #3b82f6);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.addButton:hover {
+  background-color: var(--primary-dark, #2563eb);
+}
+
+.errorMessage {
+  margin-bottom: 16px;
+}
+
+.debugInfo {
+  background-color: var(--info-light, #e0f2fe);
+  border: 1px solid var(--info-color, #06b6d4);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  font-family: monospace;
+  font-size: 0.75rem;
+}
+
+.presupuestosTable {
+  background: var(--card-background, #ffffff);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.presupuestoCategoria {
+  font-weight: 500;
+  color: var(--text-primary, #333);
+}
+
+.presupuestoMonto {
+  font-weight: 600;
+  color: var(--text-primary, #333);
+}
+
+.presupuestoPeriodo {
+  background-color: var(--primary-light, #dbeafe);
+  color: var(--primary-dark, #1e40af);
+}
+
+.presupuestoAnio {
+  font-weight: 500;
+  color: var(--text-secondary, #666);
+}
+
+.progresoContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progresoNormal {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background-color: #e5e7eb;
+}
+
+.progresoNormal .MuiLinearProgress-bar {
+  background-color: var(--success-color, #10b981);
+}
+
+.progresoAdvertencia {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background-color: #e5e7eb;
+}
+
+.progresoAdvertencia .MuiLinearProgress-bar {
+  background-color: var(--warning-color, #f59e0b);
+}
+
+.progresoPeligro {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background-color: #e5e7eb;
+}
+
+.progresoPeligro .MuiLinearProgress-bar {
+  background-color: var(--error-color, #ef4444);
+}
+
+.progresoTexto {
+  min-width: 45px;
+  font-size: 0.875rem;
+  color: var(--text-secondary, #666);
+}
+
+.editButton {
+  color: var(--primary-color, #3b82f6);
+}
+
+.editButton:hover {
+  background-color: var(--hover-background, #f3f4f6);
+}
+
+.deleteButton {
+  color: var(--error-color, #ef4444);
+}
+
+.deleteButton:hover {
+  background-color: var(--hover-background, #f3f4f6);
+}
+
+.emptyState {
+  text-align: center;
+  padding: 48px;
+  color: var(--text-secondary, #666);
+}
+
+.emptyStateText {
+  font-size: 1.125rem;
+  margin-bottom: 8px;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.dialogContent {
+  padding: 24px;
+  min-width: 500px;
+}
+
+.dialogActions {
+  padding: 16px 24px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.cancelButton {
+  background-color: transparent;
+  color: var(--text-secondary, #666);
+  border: 1px solid var(--border-color, #e5e7eb);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.saveButton {
+  background-color: var(--primary-color, #3b82f6);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.resumenCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.resumenCard {
+  background: var(--card-background, #ffffff);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.resumenCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.resumenCardTitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #666);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.resumenCardValor {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.valorTotal {
+  color: var(--primary-color, #3b82f6);
+}
+
+.valorUtilizado {
+  color: var(--warning-color, #f59e0b);
+}
+
+.valorDisponible {
+  color: var(--success-color, #10b981);
+}
+
+.resumenCardSubtexto {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #666);
+}
+
+@media (max-width: 768px) {
+  .presupuestosContainer {
+    padding: 16px;
+  }
+  
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .resumenCards {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .dialogContent {
+    min-width: auto;
+    padding: 16px;
+  }
+}

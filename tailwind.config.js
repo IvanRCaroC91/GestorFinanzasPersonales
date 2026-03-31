@@ -1,14 +1,18 @@
 /** @type {import('tailwindcss').Config} */
+// Configuración principal de Tailwind CSS para el proyecto
 export default {
+  // Archivos donde Tailwind buscará clases para generar CSS
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  // Configuración para modo oscuro usando clases
   darkMode: 'class',
   theme: {
     extend: {
+      // Paleta de colores personalizada para tema financiero
       colors: {
-        // Financial Theme Colors
+        // Colores de marca principal (Indigo)
         brand: {
           50: '#E8EAF6',
           100: '#C5CAE9',
@@ -21,6 +25,7 @@ export default {
           800: '#283593',
           900: '#1A237E',
         },
+        // Colores de acento (Rosa)
         accent: {
           50: '#FCE4EC',
           100: '#F8BBD0',
@@ -33,7 +38,7 @@ export default {
           800: '#C2185B',
           900: '#AD1457',
         },
-        // Financial Semantic Colors
+        // Colores semánticos para finanzas
         'money-in': {
           50: '#E8F5E8',
           100: '#C8E6C9',
@@ -58,6 +63,7 @@ export default {
           800: '#D32F2F',
           900: '#C62828',
         },
+        // Colores de advertencia
         warning: {
           50: '#FFF3E0',
           100: '#FFE0B2',
@@ -70,6 +76,7 @@ export default {
           800: '#EF6C00',
           900: '#E65100',
         },
+        // Colores informativos
         info: {
           50: '#E1F5FE',
           100: '#B3E5FC',
@@ -82,7 +89,7 @@ export default {
           800: '#0277BD',
           900: '#01579B',
         },
-        // Surface and Background Colors
+        // Colores de superficie y fondo
         surface: {
           DEFAULT: '#FFFFFF',
           dark: '#1E1E1E',
@@ -91,19 +98,19 @@ export default {
           DEFAULT: '#F4F7FE', // Light mode background
           dark: '#121212', // Dark mode background
         },
-        // Text Colors
+        // Colores de texto
         text: {
           primary: '#2D3748', // Main text
           secondary: '#718096', // Muted text
           inverse: '#FFFFFF',
           'inverse-secondary': '#A0AEC0',
         },
-        // Dark Mode Text Colors
+        // Colores de texto para modo oscuro
         'dark-text': {
           primary: '#FFFFFF',
           secondary: '#A0AEC0',
         },
-        // Chart Colors
+        // Colores para gráficos
         chart: {
           income: '#00C853',
           expense: '#D32F2F',
@@ -111,19 +118,24 @@ export default {
           investment: '#FF4081',
         },
       },
+      // Familias de fuentes personalizadas
       fontFamily: {
         sans: ['Inter', 'system-ui', 'Avenir', 'Helvetica', 'Arial', 'sans-serif'],
       },
+      // Sombras personalizadas para diseño financiero
       boxShadow: {
         'financial': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         'financial-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
         'dark-financial': '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)',
       },
+      // Bordes redondeados personalizados
       borderRadius: {
         'financial': '12px',
         'card': '16px',
       },
     },
   },
+  // Plugins adicionales de Tailwind
   plugins: [],
 }
+
