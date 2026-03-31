@@ -271,7 +271,4 @@ const ThemeDemo: React.FC = () => {
 
 export default ThemeDemo;
 
-// VALIDACIÓN:
-// ✔ No se modificó lógica
-// ✔ No se cambió estructura
-// ✔ Solo se agregaron comentarios
+

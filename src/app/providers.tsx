@@ -15,7 +15,3 @@ export const AppProviders = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// VALIDACIÓN:
-// ✔ No se modificó lógica
-// ✔ No se cambió estructura
-// ✔ Solo se agregaron comentarios

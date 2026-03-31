@@ -70,7 +70,3 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
 export default ProtectedRoute;
 
-// VALIDACIÓN:
-// ✔ No se modificó lógica
-// ✔ No se cambió estructura
-// ✔ Solo se agregaron comentarios

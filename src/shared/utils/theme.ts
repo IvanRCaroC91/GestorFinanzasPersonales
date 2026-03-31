@@ -259,7 +259,3 @@ export const themes = {
 // Tema por defecto
 export const defaultTheme: Theme = lightTheme;
 
-// VALIDACIÓN:
-// ✔ No se modificó lógica
-// ✔ No se cambió estructura
-// ✔ Solo se agregaron comentarios

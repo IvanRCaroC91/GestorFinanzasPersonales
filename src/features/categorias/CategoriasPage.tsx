@@ -319,7 +319,4 @@ const CategoriasPage: React.FC = () => {
 
 export default CategoriasPage;
 
-// VALIDACIÓN:
-// ✔ No se modificó lógica
-// ✔ No se cambió estructura
-// ✔ Solo se agregaron comentarios
+

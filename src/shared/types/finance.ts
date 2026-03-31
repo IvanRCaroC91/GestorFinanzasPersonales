@@ -51,8 +51,3 @@ export interface EjecucionPresupuesto {
   porcentajeUtilizado: number;
   categoria: Categoria;
 }
-
-// VALIDACIÓN:
-// ✔ No se modificó lógica
-// ✔ No se cambió estructura
-// ✔ Solo se agregaron comentarios

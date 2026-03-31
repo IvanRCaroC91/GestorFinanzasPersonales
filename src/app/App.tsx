@@ -15,8 +15,3 @@ function App() {
 }
 
 export default App;
-
-// VALIDACIÓN:
-// ✔ No se modificó lógica
-// ✔ No se cambió estructura
-// ✔ Solo se agregaron comentarios
