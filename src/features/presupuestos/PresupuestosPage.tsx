@@ -62,12 +62,10 @@ const PresupuestosPage: React.FC = () => {
       setLoading(true);
       console.log('[PresupuestosPage] Loading presupuestos...');
       
-      // Obtener fecha actual para filtrar
-      const currentDate = new Date();
-      const currentYear = currentDate.getFullYear();
-      const currentMonth = currentDate.getMonth() + 1;
-      
-      console.log(`[PresupuestosPage] Loading for year: ${currentYear}, month: ${currentMonth}`);
+      // Cargar todos los presupuestos primero para ver qué existen
+      console.log('[PresupuestosPage] Loading ALL presupuestos...');
+      const allPresupuestosResponse = await financeService.getPresupuestos();
+      console.log('[PresupuestosPage] ALL presupuestos response:', allPresupuestosResponse);
       
       // Cargar categorías primero
       console.log('[PresupuestosPage] Loading categorias...');
@@ -84,9 +82,36 @@ const PresupuestosPage: React.FC = () => {
         console.log('[PresupuestosPage] Categorias map:', categoriasMap);
       }
       
-      // Cargar presupuestos
-      const response = await financeService.getPresupuestos(currentYear, currentMonth);
-      console.log('[PresupuestosPage] Response:', response);
+      // Mostrar todos los presupuestos existentes sin filtrar por fecha
+      let response = allPresupuestosResponse;
+      
+      // Si hay presupuestos, mostrarlos todos. Si no, intentar filtrar por mes actual
+      if (allPresupuestosResponse.success && allPresupuestosResponse.data.length > 0) {
+        console.log(`[PresupuestosPage] Using all ${allPresupuestosResponse.data.length} presupuestos`);
+        
+        // Log de cada presupuesto con sus fechas
+        allPresupuestosResponse.data.forEach((presupuesto, index) => {
+          console.log(`[PresupuestosPage] Presupuesto ${index + 1}:`, {
+            id: presupuesto.id,
+            categoriaId: presupuesto.categoriaId,
+            montoLimite: presupuesto.montoLimite,
+            anio: presupuesto.anio,
+            mes: presupuesto.mes,
+            periodo: `${presupuesto.anio}-${presupuesto.mes.toString().padStart(2, '0')}`
+          });
+        });
+        
+        response = allPresupuestosResponse;
+      } else {
+        // Si no hay presupuestos, intentar cargar del mes actual
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1;
+        
+        console.log(`[PresupuestosPage] No presupuestos found, trying current month: ${currentYear}, month: ${currentMonth}`);
+        response = await financeService.getPresupuestos(currentYear, currentMonth);
+        console.log('[PresupuestosPage] Current month response:', response);
+      }
       
       if (response.success) {
         console.log(`[PresupuestosPage] Loaded ${response.data.length} presupuestos`);
