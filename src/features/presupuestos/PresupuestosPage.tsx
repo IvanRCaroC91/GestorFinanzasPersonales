@@ -20,6 +20,10 @@ import {
   Alert,
   Chip,
   LinearProgress,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -33,6 +37,7 @@ import styles from './Presupuestos.module.css';
 
 const PresupuestosPage: React.FC = () => {
   const [presupuestos, setPresupuestos] = useState<Presupuesto[]>([]);
+  const [todosLosPresupuestos, setTodosLosPresupuestos] = useState<Presupuesto[]>([]);
   const [ejecuciones, setEjecuciones] = useState<{ [key: string]: EjecucionPresupuesto }>({});
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,12 +45,18 @@ const PresupuestosPage: React.FC = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [editingPresupuesto, setEditingPresupuesto] = useState<Presupuesto | null>(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+  const [filtroAnio, setFiltroAnio] = useState<number | ''>('');
+  const [filtroMes, setFiltroMes] = useState<number | ''>('');
 
   useEffect(() => {
     loadPresupuestos();
     // Agregar una prueba de conexión
     testConnection();
   }, []);
+
+  useEffect(() => {
+    aplicarFiltros();
+  }, [filtroAnio, filtroMes, todosLosPresupuestos]);
 
   const testConnection = async () => {
     try {
@@ -55,6 +66,25 @@ const PresupuestosPage: React.FC = () => {
     } catch (error) {
       console.error('[PresupuestosPage] Connection test failed:', error);
     }
+  };
+
+  const aplicarFiltros = () => {
+    let filtrados = [...todosLosPresupuestos];
+    
+    if (filtroAnio) {
+      filtrados = filtrados.filter(p => p.anio === filtroAnio);
+    }
+    
+    if (filtroMes) {
+      filtrados = filtrados.filter(p => p.mes === filtroMes);
+    }
+    
+    setPresupuestos(filtrados);
+  };
+
+  const limpiarFiltros = () => {
+    setFiltroAnio('');
+    setFiltroMes('');
   };
 
   const loadPresupuestos = async () => {
@@ -137,6 +167,7 @@ const PresupuestosPage: React.FC = () => {
           });
         });
         
+        setTodosLosPresupuestos(presupuestosConCategorias);
         setPresupuestos(presupuestosConCategorias);
         setEjecuciones({});
       } else {
@@ -273,10 +304,14 @@ const PresupuestosPage: React.FC = () => {
     return new Date(dateString).toLocaleDateString('es-CO');
   };
 
-  const getProgressColor = (percentage: number) => {
-    if (percentage >= 90) return 'error';
-    if (percentage >= 75) return 'warning';
-    return 'success';
+  const getAvailableYears = () => {
+    const years = [...new Set(todosLosPresupuestos.map(p => p.anio))];
+    return years.sort((a, b) => b - a);
+  };
+
+  const getAvailableMonths = () => {
+    const months = [...new Set(todosLosPresupuestos.map(p => p.mes))];
+    return months.sort((a, b) => a - b);
   };
 
   if (loading) {
@@ -322,13 +357,61 @@ const PresupuestosPage: React.FC = () => {
             </Alert>
           )}
 
+          {/* Filtros */}
+          <Box className={styles.filtersContainer} sx={{ mb: 3, p: 2, backgroundColor: 'grey.50', borderRadius: 1 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>Filtros</Typography>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+              <FormControl size="small" sx={{ minWidth: 120 }}>
+                <InputLabel>Año</InputLabel>
+                <Select
+                  value={filtroAnio}
+                  label="Año"
+                  onChange={(e) => setFiltroAnio(e.target.value as number | '')}
+                >
+                  <MenuItem value="">
+                    <em>Todos</em>
+                  </MenuItem>
+                  {getAvailableYears().map(year => (
+                    <MenuItem key={year} value={year}>{year}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              
+              <FormControl size="small" sx={{ minWidth: 120 }}>
+                <InputLabel>Mes</InputLabel>
+                <Select
+                  value={filtroMes}
+                  label="Mes"
+                  onChange={(e) => setFiltroMes(e.target.value as number | '')}
+                >
+                  <MenuItem value="">
+                    <em>Todos</em>
+                  </MenuItem>
+                  {getAvailableMonths().map(month => (
+                    <MenuItem key={month} value={month}>{getMonthName(month)}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={limpiarFiltros}
+                disabled={!filtroAnio && !filtroMes}
+              >
+                Limpiar Filtros
+              </Button>
+            </Box>
+          </Box>
+
           {/* Indicador de estado para debugging */}
           <Box className={styles.debugInfo}>
             <Typography variant="body2" color="textSecondary">
-              Estado: {loading ? 'Cargando...' : 'Listo'} | 
+              Total: {todosLosPresupuestos.length} | 
+              Filtrados: {presupuestos.length} | 
               Categorías: {categorias.length} | 
-              Presupuestos: {presupuestos.length} | 
               Ejecuciones: {Object.keys(ejecuciones).length}
+              {(filtroAnio || filtroMes) && ` | Filtros: ${filtroAnio || 'Todos'}-${filtroMes ? getMonthName(filtroMes) : 'Todos'}`}
             </Typography>
           </Box>
 
