@@ -306,12 +306,15 @@ const PresupuestosPage: React.FC = () => {
 
   const getAvailableYears = () => {
     const years = [...new Set(todosLosPresupuestos.map(p => p.anio))];
-    return years.sort((a, b) => b - a);
+    const sortedYears = years.sort((a, b) => b - a);
+    console.log('[PresupuestosPage] Available years:', sortedYears);
+    return sortedYears;
   };
 
-  const getAvailableMonths = () => {
-    const months = [...new Set(todosLosPresupuestos.map(p => p.mes))];
-    return months.sort((a, b) => a - b);
+  const getAllMonths = () => {
+    const allMonths = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    console.log('[PresupuestosPage] All months:', allMonths);
+    return allMonths;
   };
 
   if (loading) {
@@ -358,15 +361,18 @@ const PresupuestosPage: React.FC = () => {
           )}
 
           {/* Filtros */}
-          <Box className={styles.filtersContainer} sx={{ mb: 3, p: 2, backgroundColor: 'grey.50', borderRadius: 1 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>Filtros</Typography>
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Box className={styles.filtersContainer}>
+            <Typography variant="h6">Filtros</Typography>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', mt: 2 }}>
               <FormControl size="small" sx={{ minWidth: 120 }}>
                 <InputLabel>Año</InputLabel>
                 <Select
                   value={filtroAnio}
                   label="Año"
-                  onChange={(e) => setFiltroAnio(e.target.value as number | '')}
+                  onChange={(e) => {
+                    console.log('[PresupuestosPage] Año seleccionado:', e.target.value);
+                    setFiltroAnio(e.target.value as number | '');
+                  }}
                 >
                   <MenuItem value="">
                     <em>Todos</em>
@@ -382,12 +388,15 @@ const PresupuestosPage: React.FC = () => {
                 <Select
                   value={filtroMes}
                   label="Mes"
-                  onChange={(e) => setFiltroMes(e.target.value as number | '')}
+                  onChange={(e) => {
+                    console.log('[PresupuestosPage] Mes seleccionado:', e.target.value);
+                    setFiltroMes(e.target.value as number | '');
+                  }}
                 >
                   <MenuItem value="">
                     <em>Todos</em>
                   </MenuItem>
-                  {getAvailableMonths().map(month => (
+                  {getAllMonths().map(month => (
                     <MenuItem key={month} value={month}>{getMonthName(month)}</MenuItem>
                   ))}
                 </Select>
@@ -396,7 +405,10 @@ const PresupuestosPage: React.FC = () => {
               <Button
                 variant="outlined"
                 size="small"
-                onClick={limpiarFiltros}
+                onClick={() => {
+                  console.log('[PresupuestosPage] Limpiando filtros');
+                  limpiarFiltros();
+                }}
                 disabled={!filtroAnio && !filtroMes}
               >
                 Limpiar Filtros
