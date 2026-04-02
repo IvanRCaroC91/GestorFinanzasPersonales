@@ -1,20 +1,29 @@
-// Importaciones de hooks y componentes de React y Material-UI
+// Importamos las herramientas necesarias de React y Material-UI
 import { useState, useEffect } from 'react';
 import { Container, Card, TextField, Button, Typography, Box, Alert, InputAdornment, IconButton, CircularProgress } from '@mui/material';
 import { Visibility, VisibilityOff, Person } from '@mui/icons-material';
 
-// Importaciones de servicios y componentes personalizados
-import { useAuth } from '../shared/hooks/AuthContext'; // Hook de autenticación
-import { useLoginForm } from '../shared/hooks/useLoginForm'; // Hook personalizado para formulario
-import { ThemeToggle } from '../shared/components/ui/ThemeToggle'; // Componente para cambiar tema
-import { useReturnTo } from '../shared/hooks/useReturnTo'; // Hook para redirección post-login
+// Importamos nuestros hooks y componentes personalizados
+import { useAuth } from '../shared/hooks/AuthContext'; // Hook que maneja la autenticación del usuario
+import { useLoginForm } from '../shared/hooks/useLoginForm'; // Hook que maneja el formulario de login
+import { ThemeToggle } from '../shared/components/ui/ThemeToggle'; // Botón para cambiar el tema claro/oscuro
+import { useReturnTo } from '../shared/hooks/useReturnTo'; // Hook que maneja a dónde redirigir después del login
 
-// Componente de página de inicio de sesión
+// Componente principal de la página de login
 const Login = () => {
-  // Hook de autenticación para manejar login, estado y errores
+  // Obtenemos el estado de autenticación del usuario
+  // isAuthenticated: nos dice si el usuario ya está logueado
+  // authLoading: nos dice si está cargando la autenticación
+  // authError: nos muestra si hay algún error de autenticación
+  // clearError: función para limpiar los errores
   const { isAuthenticated, isLoading: authLoading, error: authError, clearError } = useAuth();
   
-  // Usar hook personalizado para manejar el formulario de login
+  // Usamos nuestro hook personalizado para manejar el formulario
+  // username: el nombre de usuario que escribe el usuario
+  // password: la contraseña que escribe el usuario
+  // isLoading: nos dice si está procesando el login
+  // updateField: función para actualizar los campos del formulario
+  // handleSubmit: función que se ejecuta cuando se envía el formulario
   const {
     username,
     password,
@@ -23,32 +32,38 @@ const Login = () => {
     handleSubmit,
   } = useLoginForm();
   
-  // Estados para controlar la visibilidad de contraseña
+  // Estado para mostrar u ocultar la contraseña
+  // false = contraseña oculta (puntos)
+  // true = contraseña visible (texto)
   const [showPassword, setShowPassword] = useState(false);
   
-  // Usar hook para manejar redirección después del login exitoso
+  // Hook que se encarga de redirigir al usuario después del login
+  // Si el usuario ya está autenticado, lo redirige a la página que corresponda
   useReturnTo(isAuthenticated, authLoading);
 
-  // Limpiar error al cambiar los datos del formulario
+  // Efecto que limpia los errores cuando el usuario empieza a escribir
+  // Si hay un error de autenticación y el usuario cambia el usuario o contraseña, limpiamos el error
   useEffect(() => {
     if (authError) {
       clearError();
     }
   }, [username, password, authError, clearError]);
 
-  // Manejador de visibilidad de contraseña
+  // Función para mostrar u ocultar la contraseña
+  // Cambia el estado de showPassword de true a false o viceversa
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
   
-  // Manejador para navegación a registro
+  // Función para ir a la página de registro
+  // Redirige al usuario a la página donde puede crear una cuenta nueva
   const handleRegisterClick = () => {
-    // Usar returnTo para mantener la lógica consistente
+    // Redirigimos directamente a la página de registro
     window.location.href = '/register';
   };
 
-  // Si está cargando la autenticación inicial
+  // Si está cargando la autenticación inicial, mostramos un indicador de carga
   if (authLoading) {
     return (
       <Container maxWidth="sm" sx={{ mt: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
@@ -57,15 +72,15 @@ const Login = () => {
     );
   }
 
-  // JSX del formulario de login
+  // Renderizamos el formulario de login
   return (
     <Container maxWidth="sm" sx={{ mt: 4 }}>
-      {/* Theme Toggle */}
+      {/* Botón para cambiar entre tema claro y oscuro */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
         <ThemeToggle />
       </Box>
       
-      {/* Tarjeta principal del formulario */}
+      {/* Tarjeta principal que contiene el formulario */}
       <Card sx={{ 
         boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
         borderRadius: 2,
@@ -74,7 +89,7 @@ const Login = () => {
         backdropFilter: 'blur(10px)',
       }}>
         <Box sx={{ p: 3 }}>
-          {/* Título del formulario */}
+          {/* Título de la página de login */}
           <Typography variant="h5" gutterBottom align="center" sx={{ 
             mb: 3,
             color: '#3F51B5',
@@ -83,7 +98,7 @@ const Login = () => {
             Iniciar Sesión
           </Typography>
           
-          {/* Alerta de error si existe */}
+          {/* Mostramos alerta de error si hay algún error de autenticación */}
           {authError && (
             <Alert 
               severity="error" 
@@ -94,7 +109,7 @@ const Login = () => {
             </Alert>
           )}
           
-          {/* Formulario */}
+          {/* Formulario de login */}
           <Box component="form" onSubmit={handleSubmit} noValidate>
             <TextField
               label="Nombre de Usuario"
