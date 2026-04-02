@@ -220,7 +220,7 @@ const DashboardPage: React.FC = () => {
         categoria: m.categoria?.nombre,
         categoriaId: m.categoriaId
       })));
-      
+
       setMovimientosRecientes(movimientosOrdenados.slice(0, 5));
 
       // Calcular presupuesto vs ejecutado
