@@ -40,10 +40,10 @@ const MovimientoForm: React.FC<MovimientoFormProps> = ({ movimiento, categorias,
     }
   }, [movimiento]);
 
-  const handleChange = (field: keyof typeof formData) => (event: React.ChangeEvent<HTMLInputElement | { value: string }>) => {
+  const handleChange = (field: keyof typeof formData) => (event: any) => {
     setFormData(prev => ({
       ...prev,
-      [field]: event.target.value,
+      [field]: event.target?.value || event,
     }));
   };
 
