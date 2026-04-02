@@ -1,6 +1,8 @@
 {
   // Opciones del compilador TypeScript para la aplicación
   "compilerOptions": {
+    // Habilita compilación incremental
+    "incremental": true,
     // Archivo para información de compilación incremental
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     // Versión de JavaScript objetivo para la compilación
@@ -37,12 +39,8 @@
     "noUnusedLocals": true,
     // Advierte sobre parámetros no utilizados
     "noUnusedParameters": true,
-    // Permite sintaxis que puede ser eliminada
-    "erasableSyntaxOnly": true,
     // Previene casos fall-through en switch
-    "noFallthroughCasesInSwitch": true,
-    // Verifica efectos secundarios en imports
-    "noUncheckedSideEffectImports": true
+    "noFallthroughCasesInSwitch": true
   },
   // Archivos incluidos en la compilación
   "include": ["src"]
