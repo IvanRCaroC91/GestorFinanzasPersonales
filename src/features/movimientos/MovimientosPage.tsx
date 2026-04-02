@@ -53,10 +53,6 @@ const MovimientosPage: React.FC = () => {
     fechaFin: '',
   });
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
     try {
       setLoading(true);
@@ -81,7 +77,11 @@ const MovimientosPage: React.FC = () => {
     }
   };
 
-  const handleFilterChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  useEffect(() => {
+    loadData().catch(console.error);
+  }, []);
+
+  const handleFilterChange = (field: string) => (event: any) => {
     setFilters(prev => ({
       ...prev,
       [field]: event.target?.value || event,

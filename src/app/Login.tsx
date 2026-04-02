@@ -50,7 +50,7 @@ const Login = () => {
   }, [username, password, authError, clearError]);
 
   // Función para mostrar u ocultar la contraseña
-  // Cambia el estado de showPassword de true a false o viceversa
+  // Cambia el estado de showPassword de verdadero (true) a falso(false) o viceversa
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
