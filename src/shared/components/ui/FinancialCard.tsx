@@ -126,8 +126,6 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
   date,
   type,
 }) => {
-  const colors = useFinancialColors();
-
   const formatAmount = (value: number) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
