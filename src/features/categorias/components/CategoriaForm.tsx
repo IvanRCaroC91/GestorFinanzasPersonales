@@ -20,7 +20,7 @@ interface CategoriaFormProps {
 const CategoriaForm: React.FC<CategoriaFormProps> = ({ categoria, onSave, onCancel }) => {
     const [nombre, setNombre] = useState(categoria?.nombre || '');
     const [tipo, setTipo] = useState<'INGRESO' | 'EGRESO'>(categoria?.tipo === 'INGRESO' ? 'INGRESO' : 'EGRESO');
-    const [tipoGasto, setTipoGasto] = useState<'NECESARIO' | 'NO_NECESARIO' | 'OCASIONAL' | ''>(categoria?.tipoGasto || '');
+    const [tipoGasto, setTipoGasto] = useState<'NECESARIO' | 'NO_NECESARIO' | 'OCASIONAL' | ''>(categoria?.tipoGasto as 'NECESARIO' | 'NO_NECESARIO' | 'OCASIONAL' | '' || '');
     const [errors, setErrors] = useState<{ nombre?: string }>({});
 
     useEffect(() => {

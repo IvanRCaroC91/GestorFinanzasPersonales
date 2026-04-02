@@ -17,7 +17,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   Snackbar,
   Alert,
   Chip,
@@ -107,11 +106,17 @@ const CategoriasPage: React.FC = () => {
 
   const handleSave = async (categoriaData: Omit<Categoria, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     try {
+      // Convertir categoriaData a CategoriaRequest compatible
+      const requestData = {
+        ...categoriaData,
+        tipoGasto: categoriaData.tipoGasto === '' ? undefined : categoriaData.tipoGasto as 'NECESARIO' | 'NO_NECESARIO' | 'OCASIONAL'
+      };
+      
       let response;
       if (editingCategoria) {
-        response = await financeService.updateCategoria(editingCategoria.id!, categoriaData);
+        response = await financeService.updateCategoria(editingCategoria.id!, requestData);
       } else {
-        response = await financeService.createCategoria(categoriaData);
+        response = await financeService.createCategoria(requestData);
       }
 
       if (response.success) {
