@@ -20,7 +20,7 @@ export interface UseAuthenticatedApiReturn<T> extends ApiState<T> {
  * Hook personalizado para realizar peticiones autenticadas al backend
  * Maneja estado de carga, errores y datos automáticamente
  */
-export const useAuthenticatedApi = <T = any>(): UseAuthenticatedApiReturn<T> => {
+export const useAuthenticatedApi = <T = unknown>(): UseAuthenticatedApiReturn<T> => {
   // Estado para manejar datos, carga y errores
   const [state, setState] = useState<ApiState<T>>({
     data: null,
@@ -49,7 +49,7 @@ export const useAuthenticatedApi = <T = any>(): UseAuthenticatedApiReturn<T> => 
       }));
       throw error;
     }
-  }, []);
+  }, [axiosInstance]);
 
   // Función para resetear el estado
   const reset = useCallback(() => {

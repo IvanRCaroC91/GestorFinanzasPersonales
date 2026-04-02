@@ -81,7 +81,7 @@ const MovimientosPage: React.FC = () => {
     }
   };
 
-  const handleFilterChange = (field: string) => (event: any) => {
+  const handleFilterChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFilters(prev => ({
       ...prev,
       [field]: event.target?.value || event,

@@ -5,22 +5,25 @@ import { Visibility, VisibilityOff, Person } from '@mui/icons-material';
 
 // Importaciones de servicios y componentes personalizados
 import { useAuth } from '../shared/hooks/AuthContext'; // Hook de autenticación
+import { useLoginForm } from '../shared/hooks/useLoginForm'; // Hook personalizado para formulario
 import { ThemeToggle } from '../shared/components/ui/ThemeToggle'; // Componente para cambiar tema
 import { useReturnTo } from '../shared/hooks/useReturnTo'; // Hook para redirección post-login
 
 // Componente de página de inicio de sesión
 const Login = () => {
   // Hook de autenticación para manejar login, estado y errores
-  const { login, isAuthenticated, isLoading: authLoading, error: authError, clearError } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, error: authError, clearError } = useAuth();
   
-  // Estado para los datos del formulario
-  const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-  });
+  // Usar hook personalizado para manejar el formulario de login
+  const {
+    username,
+    password,
+    isLoading,
+    updateField,
+    handleSubmit,
+  } = useLoginForm();
   
-  // Estados para controlar el envío y visibilidad de contraseña
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Estados para controlar la visibilidad de contraseña
   const [showPassword, setShowPassword] = useState(false);
   
   // Usar hook para manejar redirección después del login exitoso
@@ -31,56 +34,18 @@ const Login = () => {
     if (authError) {
       clearError();
     }
-  }, [formData, authError, clearError]);
+  }, [username, password, authError, clearError]);
 
-  // Manejadores de cambios en los campos del formulario
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, username: e.target.value }));
+  // Manejador de visibilidad de contraseña
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, password: e.target.value }));
-  };
-
-  // Manejador de envío del formulario de login
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validación básica del formulario
-    if (!formData.username.trim() || !formData.password.trim()) {
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      console.log('[Login] Attempting login with:', formData.username);
-      const result = await login(formData);
-      
-      if (result.success) {
-        console.log('[Login] Login successful, AuthContext will handle navigation');
-        // La navegación se maneja en el useEffect
-      } else {
-        console.log('[Login] Login failed:', result.message);
-        // El error se maneja en el AuthContext
-      }
-    } catch (error) {
-      console.error('[Login] Unexpected error during login:', error);
-      // El error se maneja en el AuthContext
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+  
   // Manejador para navegación a registro
   const handleRegisterClick = () => {
     // Usar returnTo para mantener la lógica consistente
     window.location.href = '/register';
-  };
-
-  // Función para alternar visibilidad de contraseña
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
   };
 
   // Si está cargando la autenticación inicial
@@ -130,14 +95,14 @@ const Login = () => {
           )}
           
           {/* Formulario */}
-          <Box component="form" onSubmit={handleFormSubmit} noValidate>
+          <Box component="form" onSubmit={handleSubmit} noValidate>
             <TextField
               label="Nombre de Usuario"
               fullWidth
               margin="normal"
-              value={formData.username}
-              onChange={handleUsernameChange}
-              disabled={isSubmitting}
+              value={username}
+              onChange={(e) => updateField('username', e.target.value)}
+              disabled={isLoading}
               required
               autoComplete="username"
               autoFocus
@@ -156,9 +121,9 @@ const Login = () => {
               type={showPassword ? 'text' : 'password'}
               fullWidth
               margin="normal"
-              value={formData.password}
-              onChange={handlePasswordChange}
-              disabled={isSubmitting}
+              value={password}
+              onChange={(e) => updateField('password', e.target.value)}
+              disabled={isLoading}
               required
               autoComplete="current-password"
               InputProps={{
@@ -169,7 +134,7 @@ const Login = () => {
                       onClick={togglePasswordVisibility}
                       edge="end"
                       size="small"
-                      disabled={isSubmitting}
+                      disabled={isLoading}
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
@@ -184,7 +149,7 @@ const Login = () => {
               variant="contained"
               fullWidth
               size="large"
-              disabled={isSubmitting || !formData.username.trim() || !formData.password.trim()}
+              disabled={isLoading || !username.trim() || !password.trim()}
               sx={{ 
                 py: 1.5,
                 fontSize: '1.1rem',
@@ -197,7 +162,7 @@ const Login = () => {
                 },
               }}
             >
-              {isSubmitting ? (
+              {isLoading ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <CircularProgress size={20} color="inherit" />
                   Iniciando sesión...
@@ -211,7 +176,7 @@ const Login = () => {
               <Button
                 variant="text"
                 onClick={handleRegisterClick}
-                disabled={isSubmitting}
+                disabled={isLoading}
                 sx={{ 
                   textTransform: 'none',
                   color: '#FF4081',

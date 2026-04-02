@@ -58,7 +58,16 @@ const DashboardPage: React.FC = () => {
   
   // Estados para movimientos recientes y presupuestos
   const [movimientosRecientes, setMovimientosRecientes] = useState<Movimiento[]>([]);
-  const [presupuestosData, setPresupuestosData] = useState<any[]>([]);
+  interface PresupuestoEjecutado {
+  categoriaId: string;
+  categoriaNombre: string;
+  presupuesto: number;
+  ejecutado: number;
+  diferencia: number;
+  porcentajeUso: number;
+}
+
+const [presupuestosData, setPresupuestosData] = useState<PresupuestoEjecutado[]>([]);
   const [periodoSeleccionado, setPeriodoSeleccionado] = useState<{ anio: number; mes: number } | null>(null);
   const [filtroEjecucion, setFiltroEjecucion] = useState<'anio' | 'mes'>('mes');
   const [anioSeleccionado, setAnioSeleccionado] = useState<number>(new Date().getFullYear());
@@ -71,9 +80,7 @@ const DashboardPage: React.FC = () => {
   const [presupuestos, setPresupuestos] = useState<any[]>([]);
 
   useEffect(() => {
-    (async () => {
-      await loadDashboardData();
-    })();
+    loadDashboardData();
   }, []);
 
   const getPeriodoFechas = (filtro: 'anio' | 'mes', anio: number, mes: number) => {
@@ -108,14 +115,14 @@ const DashboardPage: React.FC = () => {
       const presupuestoVsEjecutado = calcularPresupuestoVsEjecutado(presupuestos, movimientos, categorias);
       setPresupuestosData(presupuestoVsEjecutado);
     }
-  }, [filtroEjecucion, anioSeleccionado, mesSeleccionado, movimientos, categorias, presupuestos]);
+  }, [filtroEjecucion, anioSeleccionado, mesSeleccionado, movimientos.length, categorias.length, presupuestos.length]);
 
   useEffect(() => {
     // Recalcular resumen cuando cambia el filtro
     if (movimientos.length > 0) {
       calcularResumenPorPeriodo();
     }
-  }, [filtroEjecucion, anioSeleccionado, mesSeleccionado, movimientos]);
+  }, [filtroEjecucion, anioSeleccionado, mesSeleccionado, movimientos.length]);
 
   const calcularResumenPorPeriodo = () => {
     const { fechaInicio, fechaFin } = getPeriodoFechas(filtroEjecucion, anioSeleccionado, mesSeleccionado);
