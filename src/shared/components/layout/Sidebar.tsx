@@ -1,5 +1,6 @@
+// Importamos las herramientas necesarias de React y Material-UI
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom'; // Hooks para navegación y ubicación
 import {
   Drawer,
   List,
@@ -20,14 +21,13 @@ import {
   TrendingDown as TrendingDownIcon,
 } from '@mui/icons-material';
 
-const drawerWidth = 280;
-
+// Definimos los elementos del menú de navegación
 const menuItems = [
   {
-    text: 'Dashboard',
-    icon: <DashboardIcon />,
-    path: '/home',
-    primary: true,
+    text: 'Dashboard', // Texto que se muestra en el menú
+    icon: <DashboardIcon />, // Icono del dashboard
+    path: '/home', // Ruta a la que navega
+    primary: true, // Indica si es un elemento principal
   },
   {
     text: 'Movimientos',
@@ -49,12 +49,15 @@ const menuItems = [
   },
 ];
 
+// Componente principal de la barra lateral (sidebar)
 const Sidebar: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  // Hooks de React Router para navegación y obtener la ruta actual
+  const navigate = useNavigate(); // Hook para navegar a otras páginas
+  const location = useLocation(); // Hook para saber en qué página estamos
 
+  // Función para manejar la navegación cuando el usuario hace clic en un elemento del menú
   const handleNavigation = (path: string) => {
-    navigate(path);
+    navigate(path); // Navegamos a la ruta especificada
   };
 
   return (
@@ -88,7 +91,7 @@ const Sidebar: React.FC = () => {
       </Box>
 
       <List sx={{ p: 2 }}>
-        {menuItems.map((item, index) => {
+        {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
           
           return (
