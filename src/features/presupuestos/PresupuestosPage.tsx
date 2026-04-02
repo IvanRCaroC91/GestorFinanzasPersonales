@@ -19,7 +19,6 @@ import {
   Snackbar,
   Alert,
   Chip,
-  LinearProgress,
   Select,
   MenuItem,
   FormControl,
@@ -182,45 +181,6 @@ const PresupuestosPage: React.FC = () => {
     }
   };
 
-  const loadEjecuciones = async (presupuestosList: Presupuesto[]) => {
-    const ejecucionesData: { [key: string]: EjecucionPresupuesto } = {};
-    
-    // Agrupar presupuestos por año y mes para optimizar llamadas
-    const yearMonthGroups = new Map<string, Presupuesto[]>();
-    
-    for (const presupuesto of presupuestosList) {
-      const key = `${presupuesto.anio}-${presupuesto.mes}`;
-      if (!yearMonthGroups.has(key)) {
-        yearMonthGroups.set(key, []);
-      }
-      yearMonthGroups.get(key)!.push(presupuesto);
-    }
-    
-    // Hacer una llamada por cada combinación año-mes
-    for (const [yearMonthKey, presupuestosGroup] of yearMonthGroups) {
-      try {
-        const [anio, mes] = yearMonthKey.split('-').map(Number);
-        console.log(`[PresupuestosPage] Loading ejecuciones for anio: ${anio}, mes: ${mes}`);
-        
-        const response = await financeService.getEjecucionPresupuesto(anio, mes);
-        if (response.success && response.data) {
-          // Mapear ejecuciones a presupuestos por categoriaId
-          response.data.forEach((ejecucion: any) => {
-            const presupuesto = presupuestosGroup.find(p => p.categoriaId === ejecucion.categoriaId);
-            if (presupuesto) {
-              ejecucionesData[presupuesto.id!] = ejecucion;
-            }
-          });
-        }
-      } catch (error) {
-        console.error(`Error loading ejecuciones for ${yearMonthKey}:`, error);
-      }
-    }
-    
-    console.log(`[PresupuestosPage] Loaded ${Object.keys(ejecucionesData).length} ejecuciones`);
-    setEjecuciones(ejecucionesData);
-  };
-
   const handleCreate = () => {
     console.log('[PresupuestosPage] handleCreate called');
     setEditingPresupuesto(null);
@@ -298,10 +258,6 @@ const PresupuestosPage: React.FC = () => {
       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
     ];
     return months[month - 1] || 'Mes desconocido';
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-CO');
   };
 
   const getAvailableYears = () => {
