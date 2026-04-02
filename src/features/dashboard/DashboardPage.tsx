@@ -151,6 +151,9 @@ const DashboardPage: React.FC = () => {
       totalIngresos,
       totalGastos,
       balance: totalIngresos - totalGastos,
+      totalCategorias: categorias.length,
+      totalMovimientos: movimientos.length,
+      totalPresupuestos: presupuestos.length,
     }));
   };
 
@@ -176,43 +179,8 @@ const DashboardPage: React.FC = () => {
       setCategorias(categorias);
       setPresupuestos(presupuestos);
 
-      // Calcular resumen según el filtro de ejecución
-      const { fechaInicio, fechaFin } = getPeriodoFechas(filtroEjecucion, anioSeleccionado, mesSeleccionado);
-      
-      // Filtrar movimientos del período seleccionado
-      const movimientosPeriodo = movimientos.filter(mov => {
-        const fechaMov = new Date(mov.fecha);
-        return fechaMov >= fechaInicio && fechaMov <= fechaFin;
-      });
-
-      const totalIngresos = movimientosPeriodo
-        .filter(mov => mov.tipo === 'INGRESO')
-        .reduce((sum, mov) => sum + (mov.valor || 0), 0);
-
-      const totalGastos = movimientosPeriodo
-        .filter(mov => mov.tipo === 'EGRESO')
-        .reduce((sum, mov) => sum + (mov.valor || 0), 0);
-
-      console.log('[Dashboard] Resumen calculado para período:', {
-        filtro: filtroEjecucion,
-        anioSeleccionado,
-        mesSeleccionado,
-        fechaInicio: fechaInicio.toISOString().split('T')[0],
-        fechaFin: fechaFin.toISOString().split('T')[0],
-        movimientosPeriodo: movimientosPeriodo.length,
-        totalIngresos,
-        totalGastos,
-        balance: totalIngresos - totalGastos
-      });
-
-      setResumen({
-        totalIngresos,
-        totalGastos,
-        balance: totalIngresos - totalGastos,
-        totalCategorias: categorias.length,
-        totalMovimientos: movimientos.length,
-        totalPresupuestos: presupuestos.length,
-      });
+      // Calcular resumen inicial usando la función existente
+      calcularResumenPorPeriodo();
 
       // Datos recientes - ordenar movimientos por fecha descendente (más reciente primero)
       // Primero mapear categorías con movimientos
