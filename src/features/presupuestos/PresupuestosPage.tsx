@@ -48,9 +48,9 @@ const PresupuestosPage: React.FC = () => {
   const [filtroMes, setFiltroMes] = useState<number | ''>('');
 
   useEffect(() => {
-    loadPresupuestos();
+    loadPresupuestos().catch(console.error);
     // Agregar una prueba de conexión
-    testConnection();
+    testConnection().catch(console.error);
   }, []);
 
   useEffect(() => {
