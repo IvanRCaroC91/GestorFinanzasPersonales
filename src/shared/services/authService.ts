@@ -5,6 +5,17 @@ interface LoginRequest {
     password: string;
 }
 
+interface RegisterRequest {
+    username: string;
+    email: string;
+    password: string;
+    celular: string;
+    primer_nombre: string;
+    primer_apellido: string;
+    segundo_nombre?: string | null;
+    segundo_apellido?: string | null;
+}
+
 interface LoginResponse {
     success: boolean;
     message: string;
@@ -69,10 +80,57 @@ class AuthService {
 
             if (error.response) {
                 const { status, data } = error.response;
-                if (status === 401) throw new Error(data?.message || 'Credenciales inválidas');
+                if (status === 400) throw new Error(data?.message || 'Usuario o contraseña incorrectos. Por favor, verifique sus datos e intente nuevamente.');
+                else if (status === 401) throw new Error(data?.message || 'Acceso no autorizado. Por favor, inicie sesión nuevamente.');
                 else if (status === 429) throw new Error('Demasiados intentos. Por favor, espere unos minutos.');
                 else if (status >= 500) throw new Error('Error del servidor. Intente nuevamente más tarde.');
                 throw new Error(data?.message || 'Error en la autenticación');
+            } else if (error.request) throw new Error('Error de conexión. Verifique su red.');
+            else throw new Error(error.message || 'Error desconocido');
+        }
+    }
+
+    // Registra un nuevo usuario en el sistema
+    async register(userData: RegisterRequest): Promise<LoginResponse> {
+        try {
+            console.log('[AuthService] Attempting registration...');
+            const response = await axiosInstance.post('/auth/register', userData);
+            const data = response.data;
+
+            if (data.success && data.token) {
+                this.setToken(data.token);
+
+                const userId = data.userId || data.user?.id || this.extractUserIdFromToken(data.token);
+                const validUserId = this.isValidUUID(userId) ? userId : this.generateUUID();
+
+                if (validUserId) this.setUserId(validUserId);
+
+                const userDataStored = {
+                    id: validUserId,
+                    username: data.user?.username || userData.username,
+                    email: data.user?.email || userData.email,
+                    nombreCompleto: data.user?.nombreCompleto || '',
+                    iniciales: data.user?.iniciales || ''
+                };
+
+                this.setUser(userDataStored);
+                data.user = userDataStored;
+
+                console.log('[AuthService] Registration successful, user data stored:', userDataStored);
+            }
+
+            return data;
+        } catch (error: any) {
+            console.error('[AuthService] Registration error:', error);
+
+            if (error.response) {
+                const { status, data } = error.response;
+                if (status === 400) throw new Error(data?.message || 'Datos de registro inválidos');
+                if (status === 409) throw new Error(data?.message || 'El usuario ya existe');
+                if (status === 422) throw new Error(data?.message || 'Error de validación');
+                if (status === 429) throw new Error('Demasiados intentos. Por favor, espere unos minutos.');
+                if (status >= 500) throw new Error('Error del servidor. Intente nuevamente más tarde.');
+                throw new Error(data?.message || 'Error en el registro');
             } else if (error.request) throw new Error('Error de conexión. Verifique su red.');
             else throw new Error(error.message || 'Error desconocido');
         }
@@ -185,3 +243,4 @@ class AuthService {
 }
 
 export default new AuthService();
+

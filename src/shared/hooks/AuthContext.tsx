@@ -39,19 +39,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
 
     const updateState = useCallback((updates: Partial<AuthState>) => {
-        setState(prev => ({ ...prev, ...updates }));
+        console.log('[AuthContext] updateState called with:', updates);
+        setState(prev => {
+            const newState = { ...prev, ...updates };
+            console.log('[AuthContext] New state:', newState);
+            return newState;
+        });
     }, []);
 
     useEffect(() => {
-        // 🔹 FORZAR logout al iniciar la app
-        console.log('[AuthContext] Forzando logout inicial para que siempre se pida login');
-        authService.logout();
-        updateState({
-            user: null,
-            isAuthenticated: false,
-            isLoading: false,
-            error: null,
-        });
+        // 🔹 FORZAR logout al iniciar la app (solo una vez)
+        console.log('[AuthContext] Inicializando AuthContext');
+        const token = authService.getToken();
+        if (token) {
+            // Si hay token, verificar si es válido
+            const isValid = authService.isAuthenticated();
+            if (!isValid) {
+                console.log('[AuthContext] Token inválido, haciendo logout');
+                authService.logout();
+                updateState({
+                    user: null,
+                    isAuthenticated: false,
+                    isLoading: false,
+                    error: null,
+                });
+            } else {
+                console.log('[AuthContext] Token válido, cargando datos de usuario');
+                const user = authService.getUser();
+                updateState({
+                    user,
+                    isAuthenticated: true,
+                    isLoading: false,
+                    error: null,
+                });
+            }
+        } else {
+            console.log('[AuthContext] No hay token, estableciendo estado inicial');
+            updateState({
+                user: null,
+                isAuthenticated: false,
+                isLoading: false,
+                error: null,
+            });
+        }
     }, [updateState]);
 
     // Procesa el formulario de login y autentica al usuario con el backend.
@@ -75,7 +105,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 return { success: false, message: errorMessage };
             }
         } catch (error: any) {
-            const errorMessage = error.response?.data?.message || error.message || 'Error de conexión';
+            console.error('[AuthContext] Login error caught:', error);
+            const errorMessage = error.message || 'Error de conexión';
+            console.log('[AuthContext] Setting error message:', errorMessage);
             updateState({ isLoading: false, error: errorMessage });
             return { success: false, message: errorMessage };
         }

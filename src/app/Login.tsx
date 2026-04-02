@@ -1,5 +1,5 @@
 // Importamos las herramientas necesarias de React y Material-UI
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Container, Card, TextField, Button, Typography, Box, Alert, InputAdornment, IconButton, CircularProgress } from '@mui/material';
 import { Visibility, VisibilityOff, Person } from '@mui/icons-material';
 
@@ -28,8 +28,10 @@ const Login = () => {
     username,
     password,
     isLoading,
+    error: formError,
     updateField,
     handleSubmit,
+    clearError: clearFormError,
   } = useLoginForm();
   
   // Estado para mostrar u ocultar la contraseña
@@ -41,13 +43,7 @@ const Login = () => {
   // Si el usuario ya está autenticado, lo redirige a la página que corresponda
   useReturnTo(isAuthenticated, authLoading);
 
-  // Efecto que limpia los errores cuando el usuario empieza a escribir
-  // Si hay un error de autenticación y el usuario cambia el usuario o contraseña, limpiamos el error
-  useEffect(() => {
-    if (authError) {
-      clearError();
-    }
-  }, [username, password, authError, clearError]);
+  // Los errores solo se limpian al enviar formulario o cerrar alerta manualmente
 
   // Función para mostrar u ocultar la contraseña
   // Cambia el estado de showPassword de verdadero (true) a falso(false) o viceversa
@@ -98,14 +94,17 @@ const Login = () => {
             Iniciar Sesión
           </Typography>
           
-          {/* Mostramos alerta de error si hay algún error de autenticación */}
-          {authError && (
+          {/* Mostramos alerta de error si hay algún error de autenticación o del formulario */}
+          {(authError || formError) && (
             <Alert 
               severity="error" 
               sx={{ mb: 2 }}
-              onClose={() => clearError()}
+              onClose={() => {
+                if (authError) clearError();
+                if (formError) clearFormError();
+              }}
             >
-              {authError}
+              {authError || formError}
             </Alert>
           )}
           
