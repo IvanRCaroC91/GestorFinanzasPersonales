@@ -84,6 +84,75 @@ const DashboardPage: React.FC = () => {
     }
   }, [filtroEjecucion, movimientos, categorias, presupuestos]);
 
+  useEffect(() => {
+    // Recalcular resumen cuando cambia el filtro
+    if (movimientos.length > 0) {
+      calcularResumenPorPeriodo();
+    }
+  }, [filtroEjecucion, movimientos]);
+
+  const calcularResumenPorPeriodo = () => {
+    const fechaActual = new Date();
+    const anioActual = fechaActual.getFullYear();
+    const mesActual = fechaActual.getMonth() + 1;
+
+    let fechaInicio: Date;
+    let fechaFin: Date;
+
+    // Determinar rango de fechas según el filtro
+    switch (filtroEjecucion) {
+      case 'anio':
+        // Todo el año
+        fechaInicio = new Date(anioActual, 0, 1); // 1 de enero
+        fechaFin = new Date(anioActual, 11, 31); // 31 de diciembre
+        break;
+      
+      case 'mes':
+        // Mes actual
+        fechaInicio = new Date(anioActual, mesActual - 1, 1);
+        fechaFin = new Date(anioActual, mesActual, 0);
+        break;
+      
+      case 'recorrido':
+      default:
+        // Desde enero hasta el mes actual
+        fechaInicio = new Date(anioActual, 0, 1); // 1 de enero
+        fechaFin = new Date(anioActual, mesActual, 0); // último día del mes actual
+        break;
+    }
+    
+    // Filtrar movimientos del período seleccionado
+    const movimientosPeriodo = movimientos.filter(mov => {
+      const fechaMov = new Date(mov.fecha);
+      return fechaMov >= fechaInicio && fechaMov <= fechaFin;
+    });
+
+    const totalIngresos = movimientosPeriodo
+      .filter(mov => mov.tipo === 'INGRESO')
+      .reduce((sum, mov) => sum + (mov.valor || 0), 0);
+
+    const totalGastos = movimientosPeriodo
+      .filter(mov => mov.tipo === 'EGRESO')
+      .reduce((sum, mov) => sum + (mov.valor || 0), 0);
+
+    console.log('[Dashboard] Resumen recalculado para período:', {
+      filtro: filtroEjecucion,
+      fechaInicio: fechaInicio.toISOString().split('T')[0],
+      fechaFin: fechaFin.toISOString().split('T')[0],
+      movimientosPeriodo: movimientosPeriodo.length,
+      totalIngresos,
+      totalGastos,
+      balance: totalIngresos - totalGastos
+    });
+
+    setResumen(prev => ({
+      ...prev,
+      totalIngresos,
+      totalGastos,
+      balance: totalIngresos - totalGastos,
+    }));
+  };
+
   // Carga todos los datos del dashboard desde el backend (movimientos, categorías, presupuestos).
   // Procesa los datos para calcular resúmenes y preparar la visualización.
   const loadDashboardData = async () => {
@@ -106,21 +175,59 @@ const DashboardPage: React.FC = () => {
       setCategorias(categorias);
       setPresupuestos(presupuestos);
 
-      // Calcular resumen del mes actual
+      // Calcular resumen según el filtro de ejecución
       const fechaActual = new Date();
-      const primerDiaMes = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), 1);
-      
-      const movimientosMes = movimientos.filter(mov => 
-        new Date(mov.fecha) >= primerDiaMes
-      );
+      const anioActual = fechaActual.getFullYear();
+      const mesActual = fechaActual.getMonth() + 1;
 
-      const totalIngresos = movimientosMes
+      let fechaInicio: Date;
+      let fechaFin: Date;
+
+      // Determinar rango de fechas según el filtro (misma lógica que calcularPresupuestoVsEjecutado)
+      switch (filtroEjecucion) {
+        case 'anio':
+          // Todo el año
+          fechaInicio = new Date(anioActual, 0, 1); // 1 de enero
+          fechaFin = new Date(anioActual, 11, 31); // 31 de diciembre
+          break;
+        
+        case 'mes':
+          // Mes actual
+          fechaInicio = new Date(anioActual, mesActual - 1, 1);
+          fechaFin = new Date(anioActual, mesActual, 0);
+          break;
+        
+        case 'recorrido':
+        default:
+          // Desde enero hasta el mes actual
+          fechaInicio = new Date(anioActual, 0, 1); // 1 de enero
+          fechaFin = new Date(anioActual, mesActual, 0); // último día del mes actual
+          break;
+      }
+      
+      // Filtrar movimientos del período seleccionado
+      const movimientosPeriodo = movimientos.filter(mov => {
+        const fechaMov = new Date(mov.fecha);
+        return fechaMov >= fechaInicio && fechaMov <= fechaFin;
+      });
+
+      const totalIngresos = movimientosPeriodo
         .filter(mov => mov.tipo === 'INGRESO')
         .reduce((sum, mov) => sum + (mov.valor || 0), 0);
 
-      const totalGastos = movimientosMes
+      const totalGastos = movimientosPeriodo
         .filter(mov => mov.tipo === 'EGRESO')
         .reduce((sum, mov) => sum + (mov.valor || 0), 0);
+
+      console.log('[Dashboard] Resumen calculado para período:', {
+        filtro: filtroEjecucion,
+        fechaInicio: fechaInicio.toISOString().split('T')[0],
+        fechaFin: fechaFin.toISOString().split('T')[0],
+        movimientosPeriodo: movimientosPeriodo.length,
+        totalIngresos,
+        totalGastos,
+        balance: totalIngresos - totalGastos
+      });
 
       setResumen({
         totalIngresos,
