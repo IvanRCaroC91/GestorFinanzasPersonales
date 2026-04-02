@@ -32,10 +32,10 @@ import {
   Delete as DeleteIcon,
   FilterList as FilterIcon,
 } from '@mui/icons-material';
-import financeService from '../../services/financeService';
-import { Movimiento, Categoria } from '../../types/finance';
-import { tipoMovimientoLabel } from '../../utils/tipoMovimientoMapper';
-import MovimientoForm from './MovimientoForm';
+import financeService from '../../shared/services/financeService';
+import { Movimiento, Categoria } from '../../shared/types/finance';
+import { tipoMovimientoLabel } from '../../shared/utils/tipoMovimientoMapper';
+import MovimientoForm from './components/MovimientoForm';
 
 const MovimientosPage: React.FC = () => {
   const [movimientos, setMovimientos] = useState<Movimiento[]>([]);
