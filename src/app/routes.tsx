@@ -5,7 +5,7 @@ import Layout from '../shared/components/layout/Layout'; // Componente de layout
 import Login from './Login'; // Página de inicio de sesión
 import Register from './Register'; // Página de registro
 import DashboardPage from '../features/dashboard/DashboardPage'; // Página principal
-import MovimientosPage from '../features/movimientos/MovimientosPageNew'; // Gestión de movimientos
+import MovimientosPage from '../features/movimientos/MovimientosPage'; // Gestión de movimientos
 import PresupuestosPage from '../features/presupuestos/PresupuestosPage'; // Gestión de presupuestos
 import CategoriasPage from '../features/categorias/CategoriasPage'; // Gestión de categorías
 import ThemeDemo from './ThemeDemo'; // Demostración de temas
