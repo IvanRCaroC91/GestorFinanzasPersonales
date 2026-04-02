@@ -29,7 +29,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import financeService from '../../shared/services/financeService'; // Servicio de finanzas
 import { Categoria, Movimiento } from '../../shared/types/finance'; // Tipos de datos
-import { tipoMovimientoLabel } from '../../shared/utils/tipoMovimientoMapper'; // Mapeador de tipos
+import { tipoMovimientoLabel } from '../../shared/utils/tipoMovimientoMapper'; // mapeado de tipos
 
 // Interfaz para datos del resumen financiero
 interface ResumenData {
@@ -61,10 +61,14 @@ const DashboardPage: React.FC = () => {
   interface PresupuestoEjecutado {
   categoriaId: string;
   categoriaNombre: string;
+  categoria: string;
   presupuesto: number;
+  presupuestado: number;
   ejecutado: number;
   diferencia: number;
   porcentajeUso: number;
+  estado: string;
+  colorEstado: 'success' | 'error' | 'default' | 'warning' | 'info';
 }
 
 const [presupuestosData, setPresupuestosData] = useState<PresupuestoEjecutado[]>([]);
@@ -80,7 +84,7 @@ const [presupuestosData, setPresupuestosData] = useState<PresupuestoEjecutado[]>
   const [presupuestos, setPresupuestos] = useState<any[]>([]);
 
   useEffect(() => {
-    loadDashboardData();
+    loadDashboardData().catch(console.error);
   }, []);
 
   const getPeriodoFechas = (filtro: 'anio' | 'mes', anio: number, mes: number) => {
@@ -230,7 +234,7 @@ const [presupuestosData, setPresupuestosData] = useState<PresupuestoEjecutado[]>
 
       setMovimientosRecientes(movimientosOrdenados.slice(0, 5));
 
-      // Calcular presupuesto vs ejecutado
+      // Calcular presupuesto versus ejecutado
       const presupuestoVsEjecutado = calcularPresupuestoVsEjecutado(presupuestos, movimientos, categorias);
       setPresupuestosData(presupuestoVsEjecutado);
 
