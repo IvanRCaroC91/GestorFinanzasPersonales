@@ -36,7 +36,7 @@ import {
 // Importaciones de servicios y componentes personalizados
 import financeService from '../../shared/services/financeService'; // Servicio de finanzas
 import { Categoria } from '../../shared/types/finance'; // Tipos de datos
-import { tipoCategoriaLabel } from '../../shared/utils/tipoMovimientoMapper'; // Mapeador de tipos
+import { tipoCategoriaLabel } from '../../shared/utils/tipoMovimientoMapper'; // mapeado de tipos
 import CategoriaForm from './components/CategoriaForm'; // Componente de formulario
 
 // Componente de página de gestión de categorías

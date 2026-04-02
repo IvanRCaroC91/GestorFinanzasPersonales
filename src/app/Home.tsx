@@ -1,5 +1,5 @@
-// Importaciones de React, hooks y componentes Material-UI
-import React, { useState, useEffect } from 'react';
+// Importaciones de hooks y componentes Material-UI
+import { useState, useEffect } from 'react';
 import {
   Container,
   Card,
@@ -28,7 +28,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../shared/hooks/AuthContext'; // Hook de autenticación
 import financeService from '../shared/services/financeService'; // Servicio de finanzas
-import { Categoria, Movimiento } from '../shared/types/finance'; // Tipos de datos
+import { Categoria } from '../shared/types/finance'; // Tipos de datos
 
 // Componente de página principal (Dashboard)
 const Home = () => {
