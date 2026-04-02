@@ -68,10 +68,10 @@ const PresupuestoForm: React.FC<PresupuestoFormProps> = ({ presupuesto, onSave, 
     }
   }, [presupuesto]);
 
-  const handleChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement | { value: string }>) => {
+  const handleChange = (field: string) => (event: any) => {
     setFormData(prev => ({
       ...prev,
-      [field]: event.target.value,
+      [field]: event.target?.value || event,
     }));
   };
 
