@@ -1,9 +1,8 @@
 import React from 'react';
-import { Box, AppBar, Toolbar, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import { useAuth } from '../../hooks/AuthContext';
-import { useFinancialColors } from '../../hooks/ThemeContext';
 
 // Tema MUI personalizado que usa nuestros colores financieros
 const theme = createTheme({
