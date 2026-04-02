@@ -1,6 +1,7 @@
 // Importaciones de hooks de React y configuración de axios
 import { useState, useCallback } from 'react';
-import axiosInstance from '../api/axiosConfig';
+import axiosInstance from '../services/axiosConfig';
+import { AxiosRequestConfig } from 'axios';
 
 // Interfaz para estado de la API
 export interface ApiState<T> {
@@ -11,7 +12,7 @@ export interface ApiState<T> {
 
 // Interfaz para retorno del hook de API autenticada
 export interface UseAuthenticatedApiReturn<T> extends ApiState<T> {
-  execute: (url: string, options?: RequestInit) => Promise<void>;
+  execute: (url: string, options?: AxiosRequestConfig) => Promise<void>;
   reset: () => void;
 }
 
@@ -28,7 +29,7 @@ export const useAuthenticatedApi = <T = any>(): UseAuthenticatedApiReturn<T> => 
   });
 
   // Función para ejecutar peticiones autenticadas
-  const execute = useCallback(async (url: string, options: RequestInit = {}) => {
+  const execute = useCallback(async (url: string, options: AxiosRequestConfig = {}) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
