@@ -15,6 +15,10 @@ import {
   Button,
   CircularProgress,
   IconButton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -57,13 +61,28 @@ const DashboardPage: React.FC = () => {
   // Estados para movimientos recientes y presupuestos
   const [movimientosRecientes, setMovimientosRecientes] = useState<Movimiento[]>([]);
   const [presupuestosData, setPresupuestosData] = useState<any[]>([]);
+  const [periodoSeleccionado, setPeriodoSeleccionado] = useState<{ anio: number; mes: number } | null>(null);
+  const [filtroEjecucion, setFiltroEjecucion] = useState<'anio' | 'mes' | 'recorrido'>('recorrido');
   const [loading, setLoading] = useState(true);
+  
+  // Estados para datos principales
+  const [movimientos, setMovimientos] = useState<Movimiento[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [presupuestos, setPresupuestos] = useState<any[]>([]);
 
   useEffect(() => {
     (async () => {
       await loadDashboardData();
     })();
   }, []);
+
+  useEffect(() => {
+    // Recalcular ejecuciones cuando cambia el filtro
+    if (movimientos.length > 0 && categorias.length > 0 && presupuestos.length > 0) {
+      const presupuestoVsEjecutado = calcularPresupuestoVsEjecutado(presupuestos, movimientos, categorias);
+      setPresupuestosData(presupuestoVsEjecutado);
+    }
+  }, [filtroEjecucion, movimientos, categorias, presupuestos]);
 
   // Carga todos los datos del dashboard desde el backend (movimientos, categorías, presupuestos).
   // Procesa los datos para calcular resúmenes y preparar la visualización.
@@ -81,6 +100,11 @@ const DashboardPage: React.FC = () => {
       const movimientos = movimientosResponse.success ? movimientosResponse.data : [];
       const categorias = categoriasResponse.success ? categoriasResponse.data : [];
       const presupuestos = presupuestosResponse.success ? presupuestosResponse.data : [];
+
+      // Guardar datos principales en el estado
+      setMovimientos(movimientos);
+      setCategorias(categorias);
+      setPresupuestos(presupuestos);
 
       // Calcular resumen del mes actual
       const fechaActual = new Date();
@@ -162,42 +186,107 @@ const DashboardPage: React.FC = () => {
   // Compara los presupuestos mensuales con los gastos reales ejecutados por categoría.
   // Calcula la diferencia y porcentaje de uso para mostrar el estado de cumplimiento.
   const calcularPresupuestoVsEjecutado = (presupuestos: any[], movimientos: Movimiento[], categorias: Categoria[]) => {
-    const fechaActual = new Date();
-    const primerDiaMes = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), 1);
-    
-    // Filtrar movimientos del mes actual
-    const movimientosMes = movimientos.filter(mov => 
-      new Date(mov.fecha) >= primerDiaMes
-    );
+    // Si no hay presupuestos, retornar array vacío
+    if (presupuestos.length === 0) {
+      console.log('[Dashboard] No hay presupuestos para calcular ejecuciones');
+      return [];
+    }
 
-    // Filtrar presupuestos del mes actual
-    const presupuestosMes = presupuestos.filter(presupuesto => 
-      presupuesto.anio === fechaActual.getFullYear() && 
-      presupuesto.mes === fechaActual.getMonth() + 1
-    );
+    const fechaActual = new Date();
+    const anioActual = fechaActual.getFullYear();
+    const mesActual = fechaActual.getMonth() + 1;
+
+    let fechaInicio: Date;
+    let fechaFin: Date;
+    let tituloPeriodo: string;
+
+    // Determinar rango de fechas según el filtro
+    switch (filtroEjecucion) {
+      case 'anio':
+        // Todo el año
+        fechaInicio = new Date(anioActual, 0, 1); // 1 de enero
+        fechaFin = new Date(anioActual, 11, 31); // 31 de diciembre
+        tituloPeriodo = `Año ${anioActual}`;
+        break;
+      
+      case 'mes':
+        // Mes actual
+        fechaInicio = new Date(anioActual, mesActual - 1, 1);
+        fechaFin = new Date(anioActual, mesActual, 0);
+        tituloPeriodo = `${getMonthName(mesActual)} ${anioActual}`;
+        break;
+      
+      case 'recorrido':
+      default:
+        // Desde enero hasta el mes actual
+        fechaInicio = new Date(anioActual, 0, 1); // 1 de enero
+        fechaFin = new Date(anioActual, mesActual, 0); // último día del mes actual
+        tituloPeriodo = `Ene-${getMonthName(mesActual)} ${anioActual}`;
+        break;
+    }
+
+    // Guardar período seleccionado para mostrar en el título
+    setPeriodoSeleccionado({ anio: anioActual, mes: mesActual });
+
+    console.log('[Dashboard] Período seleccionado para cálculo:', {
+      filtro: filtroEjecucion,
+      titulo: tituloPeriodo,
+      fechaInicio: fechaInicio.toISOString().split('T')[0],
+      fechaFin: fechaFin.toISOString().split('T')[0]
+    });
+    
+    // Filtrar movimientos del período seleccionado
+    const movimientosPeriodo = movimientos.filter(mov => {
+      const fechaMov = new Date(mov.fecha);
+      return fechaMov >= fechaInicio && fechaMov <= fechaFin;
+    });
+
+    // Para presupuestos, necesitamos manejarlos diferente según el filtro
+    let presupuestosPeriodo: any[] = [];
+    
+    if (filtroEjecucion === 'mes') {
+      // Solo presupuestos del mes actual
+      presupuestosPeriodo = presupuestos.filter(presupuesto => 
+        presupuesto.anio === anioActual && 
+        presupuesto.mes === mesActual
+      );
+    } else if (filtroEjecucion === 'recorrido') {
+      // Presupuestos de todos los meses del año hasta el mes actual
+      presupuestosPeriodo = presupuestos.filter(presupuesto => 
+        presupuesto.anio === anioActual && 
+        presupuesto.mes <= mesActual
+      );
+    } else {
+      // Todos los presupuestos del año
+      presupuestosPeriodo = presupuestos.filter(presupuesto => 
+        presupuesto.anio === anioActual
+      );
+    }
 
     console.log('[Dashboard] Datos para cálculo:', {
+      filtro: filtroEjecucion,
       categoriasCount: categorias.length,
-      movimientosMesCount: movimientosMes.length,
-      presupuestosMesCount: presupuestosMes.length
+      movimientosPeriodoCount: movimientosPeriodo.length,
+      presupuestosPeriodoCount: presupuestosPeriodo.length,
+      tituloPeriodo
     });
 
     // Log detallado de los datos brutos
     console.log('[Dashboard] Categorías:', categorias.map(c => ({ id: c.id, nombre: c.nombre })));
-    console.log('[Dashboard] Movimientos del mes:', movimientosMes.map(m => ({ 
+    console.log('[Dashboard] Movimientos del período:', movimientosPeriodo.map(m => ({ 
       categoriaId: m.categoriaId, 
       categoriaNombre: m.categoria?.nombre, 
       valor: m.valor, 
       tipo: m.tipo 
     })));
-    console.log('[Dashboard] Presupuestos del mes:', presupuestosMes.map(p => ({ 
+    console.log('[Dashboard] Presupuestos del período:', presupuestosPeriodo.map(p => ({ 
       categoriaId: p.categoriaId, 
       montoLimite: p.montoLimite,
       categoria: p.categoria?.nombre 
     })));
 
     // PASO 1: Crear mapa de presupuestos por categoriaId (solo para categorías de EGRESOS)
-    const presupuestosMap = presupuestosMes.reduce((map, presupuesto) => {
+    const presupuestosMap = presupuestosPeriodo.reduce((map, presupuesto) => {
       const categoria = categorias.find(cat => cat.id === presupuesto.categoriaId);
       console.log(`[Dashboard] Verificando presupuesto categoriaId=${presupuesto.categoriaId}:`, {
         categoria,
@@ -219,9 +308,9 @@ const DashboardPage: React.FC = () => {
 
     console.log('[Dashboard] Mapa de presupuestos (solo GASTOS):', presupuestosMap);
 
-    // PASO 2: Identificar todas las categorías que tienen movimientos en el mes (solo EGRESOS)
+    // PASO 2: Identificar todas las categorías que tienen movimientos en el período (solo EGRESOS)
     const categoriasConMovimientos = new Set<string>();
-    movimientosMes.forEach(movimiento => {
+    movimientosPeriodo.forEach(movimiento => {
       // Solo incluir categorías con movimientos de EGRESO
       if (movimiento.tipo === 'EGRESO') {
         categoriasConMovimientos.add(movimiento.categoriaId);
@@ -231,7 +320,7 @@ const DashboardPage: React.FC = () => {
     console.log('[Dashboard] Categorías con movimientos de EGRESO:', Array.from(categoriasConMovimientos));
 
     // PASO 3: Crear mapa de ejecutado por categoría
-    const ejecutadoPorCategoria = movimientosMes.reduce((map, movimiento) => {
+    const ejecutadoPorCategoria = movimientosPeriodo.reduce((map, movimiento) => {
       // Solo sumar egresos para comparación con presupuestos
       if (movimiento.tipo === 'EGRESO') {
         const categoriaId = movimiento.categoriaId;
@@ -319,6 +408,14 @@ const DashboardPage: React.FC = () => {
       style: 'currency',
       currency: 'COP'
     }).format(amount);
+  };
+
+  const getMonthName = (month: number) => {
+    const months = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    return months[month - 1] || 'Mes desconocido';
   };
 
   const formatDate = (dateString: string) => {
@@ -576,9 +673,33 @@ const DashboardPage: React.FC = () => {
           {/* PRESUPUESTO VS EJECUTADO */}
           <Card>
             <CardContent sx={{ p: 2 }}>
-              <Typography variant="h6" fontWeight="bold" mb={2}>
-                Presupuesto vs Ejecutado por Categoría
-              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6" fontWeight="bold">
+                  Presupuesto vs Ejecutado por Categoría
+                  {periodoSeleccionado && (
+                    <Typography component="span" variant="body2" color="textSecondary" sx={{ ml: 1 }}>
+                      ({getMonthName(periodoSeleccionado.mes)} {periodoSeleccionado.anio})
+                    </Typography>
+                  )}
+                </Typography>
+                
+                {/* Filtros de ejecución */}
+                <FormControl size="small" sx={{ minWidth: 150 }}>
+                  <InputLabel>Período</InputLabel>
+                  <Select
+                    value={filtroEjecucion}
+                    label="Período"
+                    onChange={(e) => {
+                      console.log('[Dashboard] Filtro ejecución cambiado:', e.target.value);
+                      setFiltroEjecucion(e.target.value as 'anio' | 'mes' | 'recorrido');
+                    }}
+                  >
+                    <MenuItem value="recorrido">Año recorrido</MenuItem>
+                    <MenuItem value="mes">Mes actual</MenuItem>
+                    <MenuItem value="anio">Todo el año</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
               <TableContainer>
                 <Table>
                   <TableHead>
