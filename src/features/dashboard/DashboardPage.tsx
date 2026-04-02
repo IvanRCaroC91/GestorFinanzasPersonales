@@ -14,7 +14,6 @@ import {
   Chip,
   Button,
   CircularProgress,
-  IconButton,
   FormControl,
   InputLabel,
   Select,
@@ -24,7 +23,6 @@ import {
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,
   AccountBalance as BalanceIcon,
-  Edit as EditIcon,
 } from '@mui/icons-material';
 
 // Importaciones de hooks y servicios personalizados
@@ -62,7 +60,9 @@ const DashboardPage: React.FC = () => {
   const [movimientosRecientes, setMovimientosRecientes] = useState<Movimiento[]>([]);
   const [presupuestosData, setPresupuestosData] = useState<any[]>([]);
   const [periodoSeleccionado, setPeriodoSeleccionado] = useState<{ anio: number; mes: number } | null>(null);
-  const [filtroEjecucion, setFiltroEjecucion] = useState<'anio' | 'mes' | 'recorrido'>('recorrido');
+  const [filtroEjecucion, setFiltroEjecucion] = useState<'anio' | 'mes'>('mes');
+  const [anioSeleccionado, setAnioSeleccionado] = useState<number>(new Date().getFullYear());
+  const [mesSeleccionado, setMesSeleccionado] = useState<number>(new Date().getMonth() + 1);
   const [loading, setLoading] = useState(true);
   
   // Estados para datos principales
@@ -76,50 +76,49 @@ const DashboardPage: React.FC = () => {
     })();
   }, []);
 
+  const getPeriodoFechas = (filtro: 'anio' | 'mes', anio: number, mes: number) => {
+    let fechaInicio: Date;
+    let fechaFin: Date;
+    let tituloPeriodo: string;
+
+    // Determinar rango de fechas según el filtro
+    switch (filtro) {
+      case 'anio':
+        // Todo el año seleccionado
+        fechaInicio = new Date(anio, 0, 1); // 1 de enero del año seleccionado
+        fechaFin = new Date(anio, 11, 31); // 31 de diciembre del año seleccionado
+        tituloPeriodo = `Año ${anio}`;
+        break;
+      
+      case 'mes':
+      default:
+        // Mes específico seleccionado
+        fechaInicio = new Date(anio, mes - 1, 1);
+        fechaFin = new Date(anio, mes, 0);
+        tituloPeriodo = `${getMonthName(mes)} ${anio}`;
+        break;
+    }
+
+    return { fechaInicio, fechaFin, tituloPeriodo };
+  };
+
   useEffect(() => {
     // Recalcular ejecuciones cuando cambia el filtro
     if (movimientos.length > 0 && categorias.length > 0 && presupuestos.length > 0) {
       const presupuestoVsEjecutado = calcularPresupuestoVsEjecutado(presupuestos, movimientos, categorias);
       setPresupuestosData(presupuestoVsEjecutado);
     }
-  }, [filtroEjecucion, movimientos, categorias, presupuestos]);
+  }, [filtroEjecucion, anioSeleccionado, mesSeleccionado, movimientos, categorias, presupuestos]);
 
   useEffect(() => {
     // Recalcular resumen cuando cambia el filtro
     if (movimientos.length > 0) {
       calcularResumenPorPeriodo();
     }
-  }, [filtroEjecucion, movimientos]);
+  }, [filtroEjecucion, anioSeleccionado, mesSeleccionado, movimientos]);
 
   const calcularResumenPorPeriodo = () => {
-    const fechaActual = new Date();
-    const anioActual = fechaActual.getFullYear();
-    const mesActual = fechaActual.getMonth() + 1;
-
-    let fechaInicio: Date;
-    let fechaFin: Date;
-
-    // Determinar rango de fechas según el filtro
-    switch (filtroEjecucion) {
-      case 'anio':
-        // Todo el año
-        fechaInicio = new Date(anioActual, 0, 1); // 1 de enero
-        fechaFin = new Date(anioActual, 11, 31); // 31 de diciembre
-        break;
-      
-      case 'mes':
-        // Mes actual
-        fechaInicio = new Date(anioActual, mesActual - 1, 1);
-        fechaFin = new Date(anioActual, mesActual, 0);
-        break;
-      
-      case 'recorrido':
-      default:
-        // Desde enero hasta el mes actual
-        fechaInicio = new Date(anioActual, 0, 1); // 1 de enero
-        fechaFin = new Date(anioActual, mesActual, 0); // último día del mes actual
-        break;
-    }
+    const { fechaInicio, fechaFin } = getPeriodoFechas(filtroEjecucion, anioSeleccionado, mesSeleccionado);
     
     // Filtrar movimientos del período seleccionado
     const movimientosPeriodo = movimientos.filter(mov => {
@@ -137,6 +136,8 @@ const DashboardPage: React.FC = () => {
 
     console.log('[Dashboard] Resumen recalculado para período:', {
       filtro: filtroEjecucion,
+      anioSeleccionado,
+      mesSeleccionado,
       fechaInicio: fechaInicio.toISOString().split('T')[0],
       fechaFin: fechaFin.toISOString().split('T')[0],
       movimientosPeriodo: movimientosPeriodo.length,
@@ -176,34 +177,7 @@ const DashboardPage: React.FC = () => {
       setPresupuestos(presupuestos);
 
       // Calcular resumen según el filtro de ejecución
-      const fechaActual = new Date();
-      const anioActual = fechaActual.getFullYear();
-      const mesActual = fechaActual.getMonth() + 1;
-
-      let fechaInicio: Date;
-      let fechaFin: Date;
-
-      // Determinar rango de fechas según el filtro (misma lógica que calcularPresupuestoVsEjecutado)
-      switch (filtroEjecucion) {
-        case 'anio':
-          // Todo el año
-          fechaInicio = new Date(anioActual, 0, 1); // 1 de enero
-          fechaFin = new Date(anioActual, 11, 31); // 31 de diciembre
-          break;
-        
-        case 'mes':
-          // Mes actual
-          fechaInicio = new Date(anioActual, mesActual - 1, 1);
-          fechaFin = new Date(anioActual, mesActual, 0);
-          break;
-        
-        case 'recorrido':
-        default:
-          // Desde enero hasta el mes actual
-          fechaInicio = new Date(anioActual, 0, 1); // 1 de enero
-          fechaFin = new Date(anioActual, mesActual, 0); // último día del mes actual
-          break;
-      }
+      const { fechaInicio, fechaFin } = getPeriodoFechas(filtroEjecucion, anioSeleccionado, mesSeleccionado);
       
       // Filtrar movimientos del período seleccionado
       const movimientosPeriodo = movimientos.filter(mov => {
@@ -221,6 +195,8 @@ const DashboardPage: React.FC = () => {
 
       console.log('[Dashboard] Resumen calculado para período:', {
         filtro: filtroEjecucion,
+        anioSeleccionado,
+        mesSeleccionado,
         fechaInicio: fechaInicio.toISOString().split('T')[0],
         fechaFin: fechaFin.toISOString().split('T')[0],
         movimientosPeriodo: movimientosPeriodo.length,
@@ -299,45 +275,16 @@ const DashboardPage: React.FC = () => {
       return [];
     }
 
-    const fechaActual = new Date();
-    const anioActual = fechaActual.getFullYear();
-    const mesActual = fechaActual.getMonth() + 1;
-
-    let fechaInicio: Date;
-    let fechaFin: Date;
-    let tituloPeriodo: string;
-
-    // Determinar rango de fechas según el filtro
-    switch (filtroEjecucion) {
-      case 'anio':
-        // Todo el año
-        fechaInicio = new Date(anioActual, 0, 1); // 1 de enero
-        fechaFin = new Date(anioActual, 11, 31); // 31 de diciembre
-        tituloPeriodo = `Año ${anioActual}`;
-        break;
-      
-      case 'mes':
-        // Mes actual
-        fechaInicio = new Date(anioActual, mesActual - 1, 1);
-        fechaFin = new Date(anioActual, mesActual, 0);
-        tituloPeriodo = `${getMonthName(mesActual)} ${anioActual}`;
-        break;
-      
-      case 'recorrido':
-      default:
-        // Desde enero hasta el mes actual
-        fechaInicio = new Date(anioActual, 0, 1); // 1 de enero
-        fechaFin = new Date(anioActual, mesActual, 0); // último día del mes actual
-        tituloPeriodo = `Ene-${getMonthName(mesActual)} ${anioActual}`;
-        break;
-    }
+    const { fechaInicio, fechaFin, tituloPeriodo } = getPeriodoFechas(filtroEjecucion, anioSeleccionado, mesSeleccionado);
 
     // Guardar período seleccionado para mostrar en el título
-    setPeriodoSeleccionado({ anio: anioActual, mes: mesActual });
+    setPeriodoSeleccionado({ anio: anioSeleccionado, mes: mesSeleccionado });
 
     console.log('[Dashboard] Período seleccionado para cálculo:', {
       filtro: filtroEjecucion,
       titulo: tituloPeriodo,
+      anioSeleccionado,
+      mesSeleccionado,
       fechaInicio: fechaInicio.toISOString().split('T')[0],
       fechaFin: fechaFin.toISOString().split('T')[0]
     });
@@ -349,29 +296,19 @@ const DashboardPage: React.FC = () => {
     });
 
     // Para presupuestos, necesitamos manejarlos diferente según el filtro
-    let presupuestosPeriodo: any[] = [];
-    
-    if (filtroEjecucion === 'mes') {
-      // Solo presupuestos del mes actual
-      presupuestosPeriodo = presupuestos.filter(presupuesto => 
-        presupuesto.anio === anioActual && 
-        presupuesto.mes === mesActual
-      );
-    } else if (filtroEjecucion === 'recorrido') {
-      // Presupuestos de todos los meses del año hasta el mes actual
-      presupuestosPeriodo = presupuestos.filter(presupuesto => 
-        presupuesto.anio === anioActual && 
-        presupuesto.mes <= mesActual
-      );
-    } else {
-      // Todos los presupuestos del año
-      presupuestosPeriodo = presupuestos.filter(presupuesto => 
-        presupuesto.anio === anioActual
-      );
-    }
+    const presupuestosPeriodo = filtroEjecucion === 'mes'
+      ? presupuestos.filter(presupuesto => 
+          presupuesto.anio === anioSeleccionado && 
+          presupuesto.mes === mesSeleccionado
+        )
+      : presupuestos.filter(presupuesto => 
+          presupuesto.anio === anioSeleccionado
+        );
 
     console.log('[Dashboard] Datos para cálculo:', {
       filtro: filtroEjecucion,
+      anioSeleccionado,
+      mesSeleccionado,
       categoriasCount: categorias.length,
       movimientosPeriodoCount: movimientosPeriodo.length,
       presupuestosPeriodoCount: presupuestosPeriodo.length,
@@ -791,21 +728,76 @@ const DashboardPage: React.FC = () => {
                 </Typography>
                 
                 {/* Filtros de ejecución */}
-                <FormControl size="small" sx={{ minWidth: 150 }}>
-                  <InputLabel>Período</InputLabel>
-                  <Select
-                    value={filtroEjecucion}
-                    label="Período"
-                    onChange={(e) => {
-                      console.log('[Dashboard] Filtro ejecución cambiado:', e.target.value);
-                      setFiltroEjecucion(e.target.value as 'anio' | 'mes' | 'recorrido');
-                    }}
-                  >
-                    <MenuItem value="recorrido">Año recorrido</MenuItem>
-                    <MenuItem value="mes">Mes actual</MenuItem>
-                    <MenuItem value="anio">Todo el año</MenuItem>
-                  </Select>
-                </FormControl>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <FormControl size="small" sx={{ minWidth: 120 }}>
+                    <InputLabel>Período</InputLabel>
+                    <Select
+                      value={filtroEjecucion}
+                      label="Período"
+                      onChange={(e) => {
+                        console.log('[Dashboard] Filtro ejecución cambiado:', e.target.value);
+                        setFiltroEjecucion(e.target.value as 'anio' | 'mes');
+                      }}
+                    >
+                      <MenuItem value="mes">Mes específico</MenuItem>
+                      <MenuItem value="anio">Año completo</MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  {filtroEjecucion === 'mes' && (
+                    <>
+                      <FormControl size="small" sx={{ minWidth: 100 }}>
+                        <InputLabel>Mes</InputLabel>
+                        <Select
+                          value={mesSeleccionado}
+                          label="Mes"
+                          onChange={(e) => {
+                            console.log('[Dashboard] Mes seleccionado:', e.target.value);
+                            setMesSeleccionado(e.target.value as number);
+                          }}
+                        >
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(mes => (
+                            <MenuItem key={mes} value={mes}>{getMonthName(mes)}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      <FormControl size="small" sx={{ minWidth: 100 }}>
+                        <InputLabel>Año</InputLabel>
+                        <Select
+                          value={anioSeleccionado}
+                          label="Año"
+                          onChange={(e) => {
+                            console.log('[Dashboard] Año seleccionado:', e.target.value);
+                            setAnioSeleccionado(e.target.value as number);
+                          }}
+                        >
+                          {[2024, 2025, 2026, 2027].map(anio => (
+                            <MenuItem key={anio} value={anio}>{anio}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </>
+                  )}
+
+                  {filtroEjecucion === 'anio' && (
+                    <FormControl size="small" sx={{ minWidth: 100 }}>
+                      <InputLabel>Año</InputLabel>
+                      <Select
+                        value={anioSeleccionado}
+                        label="Año"
+                        onChange={(e) => {
+                          console.log('[Dashboard] Año seleccionado:', e.target.value);
+                          setAnioSeleccionado(e.target.value as number);
+                        }}
+                      >
+                        {[2024, 2025, 2026, 2027].map(anio => (
+                          <MenuItem key={anio} value={anio}>{anio}</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  )}
+                </Box>
               </Box>
               <TableContainer>
                 <Table>
