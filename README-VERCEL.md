@@ -25,7 +25,7 @@ VITE_API_BASE_URL=http://localhost:8080
 
 #### Producción Vercel (Configurar en dashboard de Vercel)
 ```env
-VITE_API_BASE_URL=https://tu-backend-production.com
+VITE_API_BASE_URL=https://eureka-copy-production.up.railway.app
 ```
 
 ## 🚀 Pasos para Despliegue
@@ -53,7 +53,7 @@ git push origin feature/configuracion-vercel
 2. Ir a "Settings" → "Environment Variables"
 3. Agregar:
    - **Name**: `VITE_API_BASE_URL`
-   - **Value**: `https://tu-backend-production.com`
+   - **Value**: `https://eureka-copy-production.up.railway.app`
    - **Environments**: Production, Preview, Development
 
 ### 5. Despliegue Automático
@@ -107,8 +107,8 @@ El frontend envía headers adicionales:
 ## 📱 URLs Finales
 
 - **Frontend**: `https://tu-app.vercel.app`
-- **Backend**: `https://tu-backend-production.com`
-- **API**: `https://tu-backend-production.com/api/v1`
+- **Backend**: `https://eureka-copy-production.up.railway.app`
+- **API**: `https://eureka-copy-production.up.railway.app/api/v1`
 
 ## 🔄 Actualizaciones Futuras
 
