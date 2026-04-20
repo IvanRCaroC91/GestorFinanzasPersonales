@@ -53,7 +53,7 @@ git push origin feature/configuracion-vercel
 2. Ir a "Settings" → "Environment Variables"
 3. Agregar:
    - **Name**: `VITE_API_BASE_URL`
-   - **Value**: `https://eureka-copy-production.up.railway.app`
+   - **Value**: `https://api-gateway-production-f3ef.up.railway.app`
    - **Environments**: Production, Preview, Development
 
 ### 5. Despliegue Automático
@@ -107,8 +107,8 @@ El frontend envía headers adicionales:
 ## 📱 URLs Finales
 
 - **Frontend**: `https://tu-app.vercel.app`
-- **Backend**: `https://eureka-copy-production.up.railway.app`
-- **API**: `https://eureka-copy-production.up.railway.app/api/v1`
+- **Backend**: `https://api-gateway-production-f3ef.up.railway.app`
+- **API**: `https://api-gateway-production-f3ef.up.railway.app/api/v1`
 
 ## 🔄 Actualizaciones Futuras
 

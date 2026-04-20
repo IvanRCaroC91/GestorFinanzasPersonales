@@ -95,14 +95,14 @@ curl -X OPTIONS \
   -H "Origin: https://tu-app.vercel.app" \
   -H "Access-Control-Request-Method: POST" \
   -H "Access-Control-Request-Headers: Authorization, X-User-Id" \
-  https://eureka-copy-production.up.railway.app/api/v1/auth/login
+  https://api-gateway-production-f3ef.up.railway.app/api/v1/auth/login
 
 # Test actual request
 curl -X POST \
   -H "Origin: https://tu-app.vercel.app" \
   -H "Content-Type: application/json" \
   -d '{"username":"test","password":"test"}' \
-  https://eureka-copy-production.up.railway.app/api/v1/auth/login
+  https://api-gateway-production-f3ef.up.railway.app/api/v1/auth/login
 ```
 
 ## Common Issues
@@ -115,6 +115,6 @@ curl -X POST \
 ## Railway Specific Notes
 
 - Railway automatically provides HTTPS
-- Your app URL is: `https://eureka-copy-production.up.railway.app`
+- Your app URL is: `https://api-gateway-production-f3ef.up.railway.app`
 - Make sure your backend listens on the correct port (Railway provides PORT env var)
-- Railway's internal network: `eureka-copy.railway.internal`
+- Railway's internal network: `api-gateway.railway.internal`
