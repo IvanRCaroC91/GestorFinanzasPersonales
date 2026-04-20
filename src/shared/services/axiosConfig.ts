@@ -36,11 +36,28 @@ const isProtectedEndpoint = (url?: string): boolean => {
     return PROTECTED_ENDPOINTS.some(endpoint => url.includes(endpoint));
 };
 
+// Determinar la URL base según el entorno
+const getBaseURL = () => {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+    
+    if (apiBaseUrl) {
+        // Si está definida la variable de entorno, usarla
+        return `${apiBaseUrl}/api/v1`;
+    }
+    
+    // En desarrollo sin variable de entorno, usar proxy local
+    if (import.meta.env.DEV) {
+        return '/api/v1';
+    }
+    
+    // En producción sin variable, usar fallback (debe ser configurada)
+    console.warn('⚠️ VITE_API_BASE_URL no está configurado. Usando fallback.');
+    return '/api/v1';
+};
+
 // Configuración principal de Axios
 const axiosInstance = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL
-        ? `${import.meta.env.VITE_API_BASE_URL}/api/v1`
-        : '/api/v1',
+    baseURL: getBaseURL(),
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
